@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mycelium Pact</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<svg id="game-canvas" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="30%"  stop-color="#c8f5d0" stop-opacity="0.85"/>
+      <stop offset="70%"  stop-color="#3aff6a" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#3aff6a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="groundGrad" cx="50%" cy="100%" r="70%">
+      <stop offset="0%"   stop-color="#111f11" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0d110d" stop-opacity="1"/>
+    </radialGradient>
+    <filter id="glow-soft">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-strong">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#groundGrad)"/>
+  <g id="mycelium-layer"></g>
+  <g id="mushroom-layer"></g>
+  <g id="sapling-layer"></g>
+  <g id="stump-layer"></g>
+  <g id="orb-group"></g>
+  <g id="particle-layer"></g>
+  <g id="hint-layer"></g>
+</svg>
+
+<div id="hud">
+  <div class="h-line">🍄 Spores: <span class="h-val" id="spore-disp">0</span> <span class="h-sec" id="sps-disp">+0/s</span></div>
+  <div class="h-line">🌱 Seeds of Memory: <span class="h-val" id="seeds-disp">0</span></div>
+</div>
+
+<div id="story-text"></div>
+
+<button id="skills-toggle">🌿 Skills <span id="skill-count-badge">(0)</span></button>
+<button id="rebirth-btn">✨ Rebirth</button>
+
+<div id="drawer">
+  <div id="drawer-head">
+    <div>
+      <h2>The Pact</h2>
+      <span id="drawer-progress">0 / 20 awakened</span>
+    </div>
+    <button id="drawer-close">✕</button>
+  </div>
+  <div id="drawer-body"></div>
+</div>
+
+<div id="flash-overlay"></div>
+
+<div id="onboarding">
+  <div class="ob-icon">🌿</div>
+  <div class="ob-line">"Three winters ago, the forest burned."<br>"You are all that remains."<br>"But the roots remember."</div>
+  <button class="ob-btn" id="ob-continue">Continue →</button>
+</div>
+
+<!-- Load order: data → canvas → ui → game → debug -->
+<script src="data.js"></script>
+<script src="canvas.js"></script>
+<script src="ui.js"></script>
+<script src="game.js"></script>
+<script src="../debug.js"></script>
+
+</body>
+</html>

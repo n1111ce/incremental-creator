@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lantern Abyss</title>
+<style>
+  :root {
+    --bg: #05080f;
+    --fg: #e8f0ff;
+    --muted: #7a8599;
+    --accent: hsl(190 90% 60%);
+    --accent2: hsl(320 80% 65%);
+    --panel: rgba(12, 18, 30, 0.72);
+    --panel-border: rgba(120, 160, 220, 0.18);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 40%, #0b1526 0%, #03060c 70%, #000 100%);
+    color: var(--fg);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #header {
+    position: fixed; top: 10px; left: 0; right: 0;
+    text-align: center;
+    font-size: 9pt; color: var(--muted);
+    pointer-events: none;
+    letter-spacing: 0.4px;
+    z-index: 10;
+  }
+  #stage {
+    position: fixed; inset: 0;
+    overflow: hidden;
+  }
+  #stage svg { width: 100%; height: 100%; display: block; }
+  #hud {
+    position: fixed; top: 34px; left: 16px;
+    font-size: 13px; line-height: 1.6;
+    z-index: 5;
+    pointer-events: none;
+    text-shadow: 0 0 8px rgba(0,0,0,0.8);
+  }
+  #hud .big { font-size: 22px; color: var(--accent); font-weight: 600; }
+  #hud .sub { color: var(--muted); font-size: 11px; }
+  #panel {
+    position: fixed; top: 16px; right: 16px;
+    width: 260px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 5;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  #panel h2 {
+    font-size: 10px; color: var(--muted);
+    margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 1.2px;
+    font-weight: 500;
+  }
+  #panel h2:first-child { margin-top: 0; }
+  .btn {
+    display: block; width: 100%;
+    background: rgba(30, 50, 80, 0.4);
+    border: 1px solid rgba(120, 160, 220, 0.22);
+    color: var(--fg);
+    padding: 8px 10px;
+    border-radius: 7px;
+    font: inherit; font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    margin-bottom: 5px;
+    transition: background 0.15s, transform 0.08s, border-color 0.15s;
+  }
+  .btn:hover:not(:disabled) {
+    background: rgba(60, 100, 160, 0.5);
+    border-color: var(--accent);
+  }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn .name { display: block; font-weight: 500; }
+  .btn .desc { display: block; color: var(--muted); font-size: 10.5px; margin-top: 2px; }
+  .btn .cost { display: block; color: var(--accent); font-size: 10.5px; margin-top: 2px; }
+  .btn.afford .cost { color: var(--accent); }
+  .btn:not(.afford) .cost { color: #b87; }
+  #toast {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px; color: var(--accent);
+    text-shadow: 0 0 20px var(--accent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 20;
+    font-weight: 300;
+    letter-spacing: 2px;
+  }
+  #toast.show { opacity: 1; }
+  .popup {
+    position: absolute; pointer-events: none;
+    color: var(--accent); font-size: 13px; font-weight: 500;
+    text-shadow: 0 0 6px var(--accent);
+    animation: pop 0.9s ease-out forwards;
+  }
+  @keyframes pop {
+    0% { opacity: 0; transform: translateY(0) scale(0.8); }
+    20% { opacity: 1; transform: translateY(-8px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-40px) scale(1); }
+  }
+  #footer {
+    position: fixed; bottom: 8px; left: 16px;
+    color: var(--muted); font-size: 10px; z-index: 5;
+  }
+  #footer button {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font: inherit; text-decoration: underline;
+    padding: 0 4px;
+  }
+  #footer button:hover { color: var(--fg); }
+</style>
+</head>
+<body>
+  <div id="header">① Click the lantern to pulse  →  ② Motes drift in &amp; become essence  →  ③ Buy upgrades, descend, implode</div>
+
+  <div id="stage">
+    <svg id="sky" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div id="hud">
+    <div><span class="big" id="essence">0</span> <span class="sub">essence</span></div>
+    <div class="sub"><span id="rate">0</span>/s · depth <span id="depth">0</span> · gravity ×<span id="gravity">1.00</span></div>
+  </div>
+
+  <div id="panel">
+    <h2>Lantern</h2>
+    <div id="upgrades"></div>
+    <h2 id="orbHdr" style="display:none">Orbitals</h2>
+    <div id="orbitals"></div>
+    <h2 id="descHdr" style="display:none">Depth</h2>
+    <div id="descent"></div>
+    <h2 id="impHdr" style="display:none">Implosion</h2>
+    <div id="implosion"></div>
+  </div>
+
+  <div id="toast"></div>
+  <div id="footer">
+    <button id="resetBtn">hard reset</button>
+  </div>
+
+<script>
+"use strict";
+
+/* ===== RNG / identity ===== */
+const mulberry32 = (s) => () => {
+  s |= 0; s = s + 0x6D2B79F5 | 0;
+  let t = Math.imul(s ^ s >>> 15, 1 | s);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+};
+
+function rollIdentity(seed) {
+  const r = mulberry32(seed);
+  return {
+    seed,
+    hueBase: r() * 360,
+    hueScheme: ['analogous','complementary','triadic','tetradic'][Math.floor(r()*4)],
+    saturation: 60 + r() * 40,
+    lightness: 50 + r() * 20,
+    wobble: r() * 4,
+    glow: 8 + r() * 12,
+    grainAmount: r() * 0.15,
+  };
+}
+
+function palette(id, n = 5) {
+  const { hueBase, hueScheme, saturation, lightness } = id;
+  const offsets = {
+    analogous:     [-30, -15, 0, 15, 30],
+    complementary: [0, 15, 180, 195, 210],
+    triadic:       [0, 120, 240, 60, 180],
+    tetradic:      [0, 90, 180, 270, 45],
+  }[hueScheme];
+  return offsets.slice(0, n).map((o, i) => {
+    const h = (hueBase + o + 360) % 360;
+    const l = lightness + (i - 2) * 6;
+    return `hsl(${h} ${saturation}% ${l}%)`;
+  });
+}
+
+/* ===== State ===== */
+const SAVE_KEY = "lantern_abyss_v1";
+const defaultState = () => ({
+  essence: 0,
+  totalEssence: 0,
+  depth: 0,
+  gravity: 1,
+  seed: 1337,
+  up: {
+    pulsePower: 0,   // +click value
+    autoPulse: 0,    // auto pulses/s
+    radius: 0,       // attraction radius
+    orbital: 0,      // orbital lanterns
+    magnet: 0,       // mote spawn rate
+  },
+  implosions: 0,
+  lastTick: Date.now(),
+});
+
+let state = load() || defaultState();
+let identity = rollIdentity(state.seed);
+let colors = palette(identity);
+
+function save() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){}
+}
+function load() {
+  try {
+    const s = localStorage.getItem(SAVE_KEY);
+    if (!s) return null;
+    return JSON.parse(s);
+  } catch(e){ return null; }
+}
+
+/* ===== Derived ===== */
+function pulseValue() {
+  // base 1, +1 per level, scaled by depth and gravity
+  const base = 1 + state.up.pulsePower * 1.5;
+  return base * (1 + state.depth * 0.25) * state.gravity;
+}
+function autoPulseRate() {
+  if (state.up.autoPulse <= 0) return 0;
+  return 0.5 + state.up.autoPulse * 0.25; // pulses/s
+}
+function attractionRadius() {
+  return 120 + state.up.radius * 45 + state.depth * 10;
+}
+function moteSpawnRate() {
+  // motes/s
+  return 0.6 + state.up.magnet * 0.4 + state.depth * 0.15;
+}
+function orbitalCount() { return state.up.orbital; }
+
+/* ===== Upgrade defs ===== */
+const UPGRADES = [
+  { key: "pulsePower", name: "Brighter Pulse", desc: "+1.5 essence per pulse",
+    base: 5, mult: 1.45 },
+  { key: "autoPulse",  name: "Resonant Core",  desc: "auto-pulse +0.25/s (first level starts it)",
+    base: 30, mult: 1.6 },
+  { key: "magnet",     name: "Deep Call",      desc: "motes drift in +40% more often",
+    base: 60, mult: 1.55 },
+  { key: "radius",     name: "Wider Reach",    desc: "attraction radius +45px",
+    base: 120, mult: 1.7 },
+];
+const ORBITAL = { key: "orbital", name: "Orbital Lantern", desc: "a satellite lantern that auto-pulses",
+    base: 500, mult: 2.2 };
+
+function costOf(u) {
+  const lvl = state.up[u.key];
+  return Math.floor(u.base * Math.pow(u.mult, lvl));
+}
+function canAfford(u) { return state.essence >= costOf(u); }
+
+function buy(u) {
+  const c = costOf(u);
+  if (state.essence < c) return;
+  state.essence -= c;
+  state.up[u.key]++;
+  flashUI();
+  save();
+  renderPanel();
+}
+
+/* ===== Rendering the scene ===== */
+const svg = document.getElementById("sky");
+const stage = document.getElementById("stage");
+
+let W = window.innerWidth, H = window.innerHeight;
+function resize() {
+  W = window.innerWidth; H = window.innerHeight;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", W);
+  svg.setAttribute("height", H);
+  buildStaticScene();
+}
+window.addEventListener("resize", resize);
+
+// build the backdrop + lantern once, then animate dynamic bits in JS
+function buildStaticScene() {
+  const pal = colors;
+  const cx = W/2, cy = H/2;
+
+  svg.innerHTML = `
+    <defs>
+      <radialGradient id="bgGrad" cx="50%" cy="45%" r="70%">
+        <stop offset="0%" stop-color="${pal[2]}" stop-opacity="0.18"/>
+        <stop offset="50%" stop-color="#0a1426" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="1"/>
+      </radialGradient>
+      <radialGradient id="orbGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="white" stop-opacity="1"/>
+        <stop offset="40%" stop-color="${pal[0]}" stop-opacity="0.95"/>
+        <stop offset="100%" stop-color="${pal[1]}" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="${identity.glow}" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="wob" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence baseFrequency="0.015" numOctaves="2" seed="${identity.seed % 100}"/>
+        <feDisplacementMap in="SourceGraphic" scale="${identity.wobble}"/>
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+    <g id="parallax"></g>
+    <g id="motes"></g>
+    <g id="ripples"></g>
+    <g id="orbitals"></g>
+    <g id="lantern" transform="translate(${cx} ${cy})" style="cursor:pointer">
+      <circle r="${36 + state.implosions*2}" fill="url(#orbGrad)" filter="url(#glow)"/>
+      <circle id="core" r="${16 + state.implosions*1.2}" fill="white" opacity="0.9"/>
+    </g>
+  `;
+
+  // parallax dust
+  const g = svg.querySelector("#parallax");
+  const rng = mulberry32(identity.seed + 7);
+  for (let i = 0; i < 60; i++) {
+    const x = rng() * W, y = rng() * H;
+    const r = 0.5 + rng() * 1.8;
+    const op = 0.1 + rng() * 0.4;
+    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    c.setAttribute("cx", x); c.setAttribute("cy", y);
+    c.setAttribute("r", r);
+    c.setAttribute("fill", colors[3]);
+    c.setAttribute("opacity", op);
+    c.dataset.vy = 0.05 + rng() * 0.15;
+    c.dataset.x = x; c.dataset.y = y;
+    g.appendChild(c);
+  }
+
+  // click target
+  const lantern = svg.querySelector("#lantern");
+  lantern.addEventListener("pointerdown", (e) => {
+    doPulse(W/2, H/2, pulseValue(), true);
+  });
+}
+
+/* ===== Motes ===== */
+const motes = [];
+function spawnMote() {
+  // spawn on the edge, drift slowly inward-ish
+  const edge = Math.floor(Math.random() * 4);
+  let x, y;
+  if (edge === 0) { x = Math.random()*W; y = -20; }
+  else if (edge === 1) { x = W+20; y = Math.random()*H; }
+  else if (edge === 2) { x = Math.random()*W; y = H+20; }
+  else { x = -20; y = Math.random()*H; }
+
+  const tier = Math.min(3, Math.floor(Math.random() * (1 + state.depth*0.5)));
+  const m = {
+    x, y,
+    vx: (W/2 - x) * 0.0004 + (Math.random()-0.5)*0.3,
+    vy: (H/2 - y) * 0.0004 + (Math.random()-0.5)*0.3,
+    r: 3 + tier,
+    tier,
+    value: 1 + tier,
+    pulled: false,
+    el: null,
+  };
+  const g = svg.querySelector("#motes");
+  const el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  el.setAttribute("r", m.r);
+  el.setAttribute("fill", colors[tier % colors.length]);
+  el.setAttribute("filter", "url(#glow)");
+  el.setAttribute("opacity", "0.9");
+  m.el = el;
+  g.appendChild(el);
+  motes.push(m);
+}
+
+function updateMote(m, dt) {
+  const cx = W/2, cy = H/2;
+  const dx = cx - m.x, dy = cy - m.y;
+  const dist = Math.hypot(dx, dy);
+
+  if (m.pulled || dist < attractionRadius()) {
+    m.pulled = true;
+    const pull = 0.0015 * (1 + state.up.radius*0.1) * state.gravity;
+    m.vx += dx * pull * dt;
+    m.vy += dy * pull * dt;
+  }
+  // friction
+  m.vx *= 0.995; m.vy *= 0.995;
+  m.x += m.vx * dt;
+  m.y += m.vy * dt;
+
+  if (dist < 30 + state.implosions*2) {
+    // absorbed
+    gainEssence(m.value, m.x, m.y);
+    m.el.remove();
+    return false;
+  }
+  m.el.setAttribute("cx", m.x);
+  m.el.setAttribute("cy", m.y);
+  return true;
+}
+
+/* ===== Pulses (ripples) ===== */
+function doPulse(cx, cy, value, fromClick) {
+  // ripple
+  const g = svg.querySelector("#ripples");
+  const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  c.setAttribute("cx", cx); c.setAttribute("cy", cy);
+  c.setAttribute("r", 20);
+  c.setAttribute("fill", "none");
+  c.setAttribute("stroke", colors[0]);
+  c.setAttribute("stroke-width", 2);
+  c.setAttribute("opacity", 0.8);
+  g.appendChild(c);
+  const maxR = attractionRadius();
+  const start = performance.now();
+  function step(now) {
+    const t = (now - start) / 600;
+    if (t >= 1) { c.remove(); return; }
+    c.setAttribute("r", 20 + t * maxR);
+    c.setAttribute("opacity", 0.8 * (1 - t));
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // pulse: pull all motes within radius
+  for (const m of motes) {
+    const d = Math.hypot(m.x - cx, m.y - cy);
+    if (d < maxR) {
+      const k = 0.6 * state.gravity;
+      m.vx += (cx - m.x) / d * k;
+      m.vy += (cy - m.y) / d * k;
+      m.pulled = true;
+    }
+  }
+
+  // direct essence for clicks
+  if (fromClick) {
+    gainEssence(value, cx, cy);
+    // core flash
+    const core = svg.querySelector("#core");
+    if (core) {
+      core.setAttribute("opacity", "1");
+      core.setAttribute("r", 20 + state.implosions*1.2);
+      setTimeout(() => {
+        core.setAttribute("opacity", "0.9");
+        core.setAttribute("r", 16 + state.implosions*1.2);
+      }, 90);
+    }
+  }
+}
+
+/* ===== Essence gain & popups ===== */
+function gainEssence(v, x, y) {
+  state.essence += v;
+  state.totalEssence += v;
+  if (x != null) spawnPopup(x, y, v);
+  updateHUD();
+}
+
+function spawnPopup(x, y, v) {
+  const el = document.createElement("div");
+  el.className = "popup";
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  el.textContent = "+" + formatNum(v);
+  stage.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+function formatNum(n) {
+  if (n < 1000) return n.toFixed(n < 10 ? 1 : 0);
+  const units = ["","K","M","B","T","Qa","Qi"];
+  let i = 0; while (n >= 1000 && i < units.length-1) { n /= 1000; i++; }
+  return n.toFixed(2) + units[i];
+}
+
+/* ===== Orbital lanterns ===== */
+let orbitalPhase = 0;
+function renderOrbitals(dt) {
+  const g = svg.querySelector("#orbitals");
+  const n = orbitalCount();
+  orbitalPhase += dt * 0.0006;
+  // sync children count
+  while (g.children.length < n) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    el.setAttribute("r", 10);
+    el.setAttribute("fill", "url(#orbGrad)");
+    el.setAttribute("filter", "url(#glow)");
+    g.appendChild(el);
+  }
+  while (g.children.length > n) g.lastChild.remove();
+
+  const cx = W/2, cy = H/2;
+  const orbR = 120;
+  for (let i = 0; i < n; i++) {
+    const a = orbitalPhase + (i/n) * Math.PI * 2;
+    const x = cx + Math.cos(a) * orbR;
+    const y = cy + Math.sin(a) * orbR;
+    g.children[i].setAttribute("cx", x);
+    g.children[i].setAttribute("cy", y);
+    g.children[i].dataset.x = x;
+    g.children[i].dataset.y = y;
+  }
+}
+
+let orbitalTimers = [];
+function tickOrbitals(dt) {
+  const n = orbitalCount();
+  while (orbitalTimers.length < n) orbitalTimers.push(0);
+  orbitalTimers.length = n;
+  const cx = W/2, cy = H/2;
+  const interval = 1600; // ms between pulses per orbital
+  for (let i = 0; i < n; i++) {
+    orbitalTimers[i] += dt;
+    if (orbitalTimers[i] >= interval) {
+      orbitalTimers[i] -= interval;
+      const orbEl = svg.querySelector("#orbitals").children[i];
+      if (orbEl) {
+        const x = +orbEl.dataset.x, y = +orbEl.dataset.y;
+        doPulse(x, y, 0, false);
+      }
+    }
+  }
+}
+
+/* ===== Descend / Implode ===== */
+function descend() {
+  const cost = descendCost();
+  if (state.essence < cost) return;
+  state.essence -= cost;
+  state.depth++;
+  flashMood("hue");
+  showToast("Descending…");
+  save();
+  renderPanel();
+}
+function descendCost() {
+  return Math.floor(200 * Math.pow(4, state.depth));
+}
+
+function implode() {
+  const gain = implosionGain();
+  if (gain <= 0) return;
+  state.gravity *= (1 + gain);
+  state.implosions++;
+  state.essence = 0;
+  state.totalEssence = 0;
+  state.depth = 0;
+  state.up = { pulsePower: 0, autoPulse: 0, radius: 0, orbital: 0, magnet: 0 };
+  state.seed = (Date.now() ^ (state.implosions * 9973)) >>> 0;
+  identity = rollIdentity(state.seed);
+  colors = palette(identity);
+  motes.forEach(m => m.el && m.el.remove());
+  motes.length = 0;
+  buildStaticScene();
+  flashMood("implode");
+  showToast("Implosion ×" + state.gravity.toFixed(2));
+  save();
+  renderPanel();
+}
+function implosionGain() {
+  // earn gravity multiplier when depth >= 3
+  if (state.depth < 3) return 0;
+  return 0.2 * (state.depth - 2) + state.totalEssence / 50000;
+}
+
+/* ===== Mood transitions ===== */
+function flashMood(kind) {
+  if (kind === "implode") {
+    stage.style.transition = "filter 0.2s";
+    stage.style.filter = "saturate(3) brightness(1.6)";
+    setTimeout(() => {
+      stage.style.transition = "filter 0.8s";
+      stage.style.filter = "";
+    }, 250);
+  } else if (kind === "hue") {
+    stage.style.transition = "filter 1.6s";
+    const deg = 30 + Math.random() * 60;
+    stage.style.filter = `hue-rotate(${deg}deg)`;
+    setTimeout(() => { stage.style.filter = ""; }, 1800);
+  }
+}
+function flashUI() {
+  // subtle pulse on HUD
+  const hud = document.getElementById("essence");
+  hud.style.transition = "transform 0.05s";
+  hud.style.transform = "scale(1.08)";
+  setTimeout(() => { hud.style.transform = ""; }, 90);
+}
+
+/* ===== Toast ===== */
+const toast = document.getElementById("toast");
+let toastTimer = null;
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
+}
+
+/* ===== HUD & Panel ===== */
+function updateHUD() {
+  document.getElementById("essence").textContent = formatNum(state.essence);
+  const approxRate = autoPulseRate() * pulseValue() + orbitalCount() * (1/1.6) * 0.5;
+  document.getElementById("rate").textContent = formatNum(approxRate);
+  document.getElementById("depth").textContent = state.depth;
+  document.getElementById("gravity").textContent = state.gravity.toFixed(2);
+}
+
+function renderPanel() {
+  const upEl = document.getElementById("upgrades");
+  upEl.innerHTML = "";
+  UPGRADES.forEach(u => {
+    upEl.appendChild(makeBtn(u));
+  });
+
+  const orbEl = document.getElementById("orbitals");
+  const orbHdr = document.getElementById("orbHdr");
+  if (state.totalEssence >= 200 || state.up.orbital > 0) {
+    orbHdr.style.display = "";
+    orbEl.innerHTML = "";
+    orbEl.appendChild(makeBtn(ORBITAL));
+  } else {
+    orbHdr.style.display = "none";
+    orbEl.innerHTML = "";
+  }
+
+  const descEl = document.getElementById("descent");
+  const descHdr = document.getElementById("descHdr");
+  if (state.totalEssence >= 150 || state.depth > 0) {
+    descHdr.style.display = "";
+    const cost = descendCost();
+    const aff = state.essence >= cost;
+    descEl.innerHTML = `
+      <button class="btn ${aff?'afford':''}" id="descBtn" ${aff?'':'disabled'}>
+        <span class="name">Descend Deeper</span>
+        <span class="desc">new biome · +25% pulse · faster motes</span>
+        <span class="cost">cost: ${formatNum(cost)} essence</span>
+      </button>`;
+    document.getElementById("descBtn").onclick = descend;
+  } else {
+    descHdr.style.display = "none";
+    descEl.innerHTML = "";
+  }
+
+  const impEl = document.getElementById("implosion");
+  const impHdr = document.getElementById("impHdr");
+  const gain = implosionGain();
+  if (state.depth >= 3 || state.implosions > 0) {
+    impHdr.style.display = "";
+    const aff = gain > 0;
+    impEl.innerHTML = `
+      <button class="btn ${aff?'afford':''}" id="impBtn" ${aff?'':'disabled'}>
+        <span class="name">Implode</span>
+        <span class="desc">reset · permanent gravity ×(1 + ${(gain).toFixed(2)})</span>
+        <span class="cost">${aff?'ready':'reach depth 3'}</span>
+      </button>`;
+    document.getElementById("impBtn").onclick = implode;
+  } else {
+    impHdr.style.display = "none";
+    impEl.innerHTML = "";
+  }
+  updateHUD();
+}
+
+function makeBtn(u) {
+  const cost = costOf(u);
+  const aff = state.essence >= cost;
+  const b = document.createElement("button");
+  b.className = "btn" + (aff ? " afford" : "");
+  b.disabled = !aff;
+  b.innerHTML = `
+    <span class="name">${u.name} <span style="color:var(--muted);font-weight:400">Lv ${state.up[u.key]}</span></span>
+    <span class="desc">${u.desc}</span>
+    <span class="cost">cost: ${formatNum(cost)}</span>`;
+  b.onclick = () => buy(u);
+  return b;
+}
+
+/* ===== Main loop ===== */
+let lastFrame = performance.now();
+let spawnAccum = 0;
+let autoAccum = 0;
+
+function loop(now) {
+  const dt = Math.min(50, now - lastFrame);
+  lastFrame = now;
+
+  // spawn motes
+  spawnAccum += dt;
+  const interval = 1000 / moteSpawnRate();
+  while (spawnAccum >= interval && motes.length < 80) {
+    spawnAccum -= interval;
+    spawnMote();
+  }
+
+  // update motes
+  for (let i = motes.length - 1; i >= 0; i--) {
+    if (!updateMote(motes[i], dt * 0.06)) motes.splice(i, 1);
+  }
+
+  // parallax dust drift
+  const dust = svg.querySelector("#parallax");
+  if (dust) {
+    for (const c of dust.children) {
+      let y = +c.dataset.y + (+c.dataset.vy) * dt;
+      if (y > H + 10) { y = -10; c.dataset.x = Math.random() * W; c.setAttribute("cx", c.dataset.x); }
+      c.dataset.y = y;
+      c.setAttribute("cy", y);
+    }
+  }
+
+  // auto-pulse
+  const apr = autoPulseRate();
+  if (apr > 0) {
+    autoAccum += dt;
+    const iv = 1000 / apr;
+    while (autoAccum >= iv) {
+      autoAccum -= iv;
+      doPulse(W/2, H/2, pulseValue() * 0.8, true); // slightly weaker than manual
+    }
+  }
+
+  // orbitals
+  renderOrbitals(dt);
+  tickOrbitals(dt);
+
+  requestAnimationFrame(loop);
+}
+
+/* ===== Init ===== */
+document.getElementById("resetBtn").onclick = () => {
+  if (!confirm("Reset all progress?")) return;
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+};
+
+// periodic save + panel refresh
+setInterval(() => { save(); renderPanel(); }, 1000);
+
+resize();
+renderPanel();
+updateHUD();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
