@@ -121,6 +121,8 @@ function endIntro() {
 function hideRopeArrow() {
   var ropeArrow = document.getElementById('rope-arrow');
   if (ropeArrow) ropeArrow.style.display = 'none';
+  var ring = document.getElementById('rope-knot-ring');
+  if (ring) ring.style.display = 'none';
 }
 
 // ---------------------------------------------------------------------------
@@ -542,6 +544,13 @@ function initUI() {
   document.getElementById('diver-group').addEventListener('pointerdown', function(e) {
     e.preventDefault();
     if (G.diverVisible) onDiverClick(e);
+  });
+
+  // Intro overlay: tapping anywhere after arrow shows triggers the first pull
+  document.getElementById('intro-overlay').addEventListener('pointerdown', function(e) {
+    if (introPhase < 2) return;
+    e.preventDefault();
+    onRopeClick(e);
   });
 
   // Resize

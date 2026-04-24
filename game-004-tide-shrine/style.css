@@ -513,6 +513,16 @@ html, body {
   50%       { transform: translateY(8px); }
 }
 
+.knot-pulse {
+  animation: knot-pulse 1.1s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes knot-pulse {
+  0%, 100% { opacity: 0.9; stroke-width: 3; }
+  50%      { opacity: 0.35; stroke-width: 6; }
+}
+
 /* ===== Shell popup numbers ===== */
 .shell-popup {
   font-family: Georgia, serif;

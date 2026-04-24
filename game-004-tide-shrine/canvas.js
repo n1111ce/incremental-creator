@@ -173,7 +173,16 @@ function positionRope() {
   var knot = document.getElementById('rope-knot');
   knot.setAttribute('cx', ROPE_X);
   knot.setAttribute('cy', ROPE_BOT_Y);
-  knot.setAttribute('r', 14);
+  knot.setAttribute('r', 18);
+
+  // Pulsing onboarding ring around knot
+  var ring = document.getElementById('rope-knot-ring');
+  if (ring) {
+    ring.setAttribute('cx', ROPE_X);
+    ring.setAttribute('cy', ROPE_BOT_Y);
+    ring.setAttribute('r', 26);
+    ring.setAttribute('class', 'knot-pulse');
+  }
 
   // Rope paths (natural drape)
   updateRopePaths(0);
