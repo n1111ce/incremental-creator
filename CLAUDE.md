@@ -23,6 +23,25 @@ This folder is dedicated to building **incremental games**. Each game lives in i
 - Must work offline. No fetches, no telemetry, no analytics.
 - **Bug fixes go to the relevant file only** — not the whole project. This is the point of modular structure.
 
+## Debug God Mode (required on every game)
+
+The shared `debug.js` exposes a registry API: `registerDebugAction(label, fn, category)`. Buttons appear in a "God Mode" column of the debug panel so playtesting a feature never requires clicking a trillion times to reach it.
+
+**Every new game MUST register cheats covering:**
+- **currency** — at least 3 tiers: +small / +huge / +max for each primary resource
+- **skills** — "Unlock All" + one button per branch + "Refund All" (flips state, recomputes derived effects, re-renders any tree/panel)
+- **mechanics** — one button per mechanic-unlock node (spawn the event / force the buff state / fill the meter / bypass its gate). This is the point — you should be able to demo every unlock in seconds without grinding toward it.
+- **time** — Simulate 30s, Simulate 5 min, Pause/Resume (toggles a flag the tick loop reads)
+- **prestige** — "Make Prestige Available", "Trigger Prestige Now", "+1 prestige currency"
+
+**Implementation rules:**
+- Register inside a `DOMContentLoaded` listener at the bottom of `game.js`, guarded by `if (typeof registerDebugAction !== 'function') return;` — debug.js loads after game.js, so defer.
+- Every cheat must call the REAL existing functions (HUD refresh, save, recompute, re-render). Do not duplicate game logic inside the cheat. If a needed function is scoped inside an IIFE, hoist it to `window.X` — minimal surgery, not a refactor.
+- When a mechanic has a gate (`if (!G.upgrades['X']) return;`), the cheat that spawns it should temporarily grant the upgrade, call the function, then restore — so the button works even before the player has unlocked the mechanic.
+- Labels are short (≤ 20 chars). Categories are lowercase.
+
+A new game is not shipped until God Mode lets you hit every feature from a cold save in under 30 seconds.
+
 ## Cross-device compatibility (required — not optional)
 
 Games are played on **two devices**: a Helios 300 laptop (Windows, mouse+keyboard) and a **Samsung Galaxy Tab S8+** (Android, touchscreen + Bluetooth keyboard + Bluetooth mouse, usually landscape). Every game must work on both without detection-based code paths — treat mouse/touch/pen as one unified input.
