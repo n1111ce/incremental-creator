@@ -9,8 +9,9 @@ This folder is dedicated to building **incremental games**. Each game lives in i
 3. Create folder `game-NNN-suggested-name/` with:
    - `index.html` — structure only (`<link>` + `<script>` tags); always include `<script src="../debug.js"></script>` as the **last** script tag
    - `README.md` — one-paragraph pitch + core loop + dopamine schedule (see below)
-4. When done, tell the user: *"Open `game-NNN-.../index.html` and playtest. Tell me what felt good and what didn't."*
-5. After they give feedback, append raw notes to `FEEDBACK_LOG.md`, then **distill** into `LESSONS.md` (update existing lines when possible, don't just append).
+4. **Before telling the user to playtest, push to GitHub** (see Hosting section). The game must be live at its Pages URL before the playtest request — the user plays on a tablet and needs the URL.
+5. Tell the user: *"Live at `https://n1111ce.github.io/incremental-creator/game-NNN-xxx/` — playtest on laptop or tablet. Tell me what felt good and what didn't."*
+6. After they give feedback, append raw notes to `FEEDBACK_LOG.md`, then **distill** into `LESSONS.md` (update existing lines when possible, don't just append). Commit + push the doc updates too.
 
 ## Tech constraints
 
@@ -37,18 +38,33 @@ Games are played on **two devices**: a Helios 300 laptop (Windows, mouse+keyboar
 - **Save portability**: localStorage does NOT sync across devices. Every game must include **Export Save** and **Import Save** buttons that serialize state to a base64 string for manual copy-paste between devices.
 - Landscape is the expected tablet orientation but the layout must not *break* in portrait — degrade gracefully.
 
-## Hosting (online play)
+## Hosting (online play) — automated
 
-Games are hosted on **GitHub Pages** so the tablet can load them via URL. Workflow (GUI-only, matches user's constraint):
+This folder **is already** a Git repo linked to `https://github.com/n1111ce/incremental-creator` with GitHub Pages enabled on `main` branch root. Every push auto-deploys within ~1 minute. No user action required.
 
-1. This folder is a Git repo linked to a GitHub repo (e.g. `incremental-creator`). Managed via **GitHub Desktop** — never require the user to use a terminal.
-2. After a new game ships: user opens GitHub Desktop → reviews the diff → clicks "Commit to main" → clicks "Push origin". That's it.
-3. Each game is then live at: `https://<user>.github.io/incremental-creator/game-NNN-xxx/index.html`
-4. Share the URL to the tablet however convenient (bookmark, QR, message).
+**Claude pushes, not the user.** The user only clicks GUIs. Claude runs the commit+push via Bash at two points in the workflow:
+
+1. **After shipping a new game** (before asking for playtest):
+   ```
+   git add game-NNN-xxx/
+   git commit -m "Add game NNN: <name>"
+   git push
+   ```
+   Then announce the Pages URL: `https://n1111ce.github.io/incremental-creator/game-NNN-xxx/`
+2. **After distilling feedback into LESSONS.md / FEEDBACK_LOG.md**:
+   ```
+   git add LESSONS.md FEEDBACK_LOG.md ASSETS.md CLAUDE.md
+   git commit -m "Lessons from game NNN playtest"
+   git push
+   ```
+
+Never require the user to open GitHub Desktop or type commands. The GUI-only rule applies to *the user*, not to Claude.
 
 Code implication: **all asset paths must be relative** (`./style.css`, `../debug.js`) so the game works identically at `file://` on the laptop and under the Pages subpath on the tablet. Never use absolute paths starting with `/`.
 
-Alternative for quick shares without pushing: **Netlify Drop** (drag folder → temporary URL). Use only for throwaway previews.
+If `git push` fails (auth/network), surface the error to the user plainly — don't silently skip. Don't use `--force` unless the user explicitly asks.
+
+Alternative for throwaway previews: **Netlify Drop** (drag folder → temporary URL). Rarely needed now that Pages is set up.
 
 ## Incremental game design — the core skill
 
