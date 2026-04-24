@@ -272,7 +272,10 @@ var _lastTick = Date.now();
 var _lastSave = Date.now();
 var _lastModalRefresh = Date.now();
 
+var _dbgTimePaused = false;
+
 function tick() {
+  if (_dbgTimePaused) return;
   var now = Date.now();
   var dt = Math.min((now - _lastTick) / 1000, 0.2);
   _lastTick = now;
@@ -395,3 +398,200 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ---------------------------------------------------------------------------
+// God Mode — debug action registrations
+// Deferred so debug.js (loaded after game.js) has already run and
+// registerDebugAction is available on the global scope.
+// ---------------------------------------------------------------------------
+window.addEventListener('DOMContentLoaded', function() {
+  if (typeof registerDebugAction !== 'function') return;
+
+  // ---- currency ----
+  registerDebugAction('+1k Light', function() {
+    G.stars += 1000;
+    updateHUD(); saveGame();
+  }, 'currency');
+
+  registerDebugAction('+100k Light', function() {
+    G.stars += 100000;
+    updateHUD(); saveGame();
+  }, 'currency');
+
+  registerDebugAction('+10M Light', function() {
+    G.stars += 10000000;
+    updateHUD(); saveGame();
+  }, 'currency');
+
+  registerDebugAction('Max Light (1e12)', function() {
+    G.stars = 1e12;
+    updateHUD(); saveGame();
+  }, 'currency');
+
+  // ---- skills ----
+  registerDebugAction('Unlock All Skills', function() {
+    for (var i = 0; i < UPGRADES.length; i++) {
+      G.upgrades[UPGRADES[i].id] = true;
+    }
+    // Apply side-effects that applyUpgradeEffect normally handles
+    G.skyCapacity = 60 + 20; // S2 adds 20
+    if (!_twinAnvilBuilt) buildTwinAnvil();
+    if (!_moonBuilt) buildMoon();
+    renderSkillModal(); updateHUD(); saveGame();
+  }, 'skills');
+
+  registerDebugAction('Unlock Flame Branch', function() {
+    var flame = ['F1','F2','F3','F4','F5','F6','F7','F8'];
+    for (var i = 0; i < flame.length; i++) G.upgrades[flame[i]] = true;
+    if (!_twinAnvilBuilt) buildTwinAnvil();
+    renderSkillModal(); updateHUD(); saveGame();
+  }, 'skills');
+
+  registerDebugAction('Unlock Sky Branch', function() {
+    var sky = ['S1','S2','S3','S4','S5','S6','S7','S8'];
+    for (var i = 0; i < sky.length; i++) G.upgrades[sky[i]] = true;
+    G.skyCapacity = 60 + 20;
+    if (!_moonBuilt) buildMoon();
+    renderSkillModal(); updateHUD(); saveGame();
+  }, 'skills');
+
+  registerDebugAction('Unlock Myth Branch', function() {
+    var myth = ['M1','M2','M3','M4','M5','M6','M7'];
+    for (var i = 0; i < myth.length; i++) G.upgrades[myth[i]] = true;
+    renderSkillModal(); updateHUD(); saveGame();
+  }, 'skills');
+
+  registerDebugAction('Refund All Skills', function() {
+    G.upgrades = {};
+    renderSkillModal(); updateHUD(); saveGame();
+  }, 'skills');
+
+  // ---- mechanics ----
+  registerDebugAction('Spawn Shooting Star', function() {
+    // Bypass the S4 gate check inside spawnShootingStar by temporarily granting S4
+    var had = G.upgrades['S4'];
+    G.upgrades['S4'] = true;
+    ensureShootingStarGradient();
+    spawnShootingStar();
+    if (!had) G.upgrades['S4'] = had;
+  }, 'mechanics');
+
+  registerDebugAction('Spawn Comet', function() {
+    _cometAlive = false; // reset if one is stuck
+    spawnComet();
+  }, 'mechanics');
+
+  registerDebugAction('Fire Chain Lightning', function() {
+    fireChainLightning();
+    saveGame();
+  }, 'mechanics');
+
+  registerDebugAction('Force Full Moon (15s)', function() {
+    var had = G.upgrades['S6'];
+    G.upgrades['S6'] = true;
+    if (!_moonBuilt) buildMoon();
+    // Set phase to 62s — solidly inside the [60,75) full moon window
+    G.moonPhaseTime = 62;
+    updateMoonPhase(G.moonPhaseTime);
+    if (!had) G.upgrades['S6'] = had;
+    updateHUD(); saveGame();
+  }, 'mechanics');
+
+  registerDebugAction('Fill Heat (both anvils)', function() {
+    G.heat = 100;
+    G.twinHeat = 100;
+    updateEmber(G.heat);
+    if (typeof updateEmber2 === 'function') updateEmber2(G.twinHeat);
+    updateHUD(); saveGame();
+  }, 'mechanics');
+
+  registerDebugAction('Spawn 10 Stars', function() {
+    for (var i = 0; i < 10; i++) {
+      var skyRect = skyCanvas.getBoundingClientRect();
+      var idx = G.skyStars.length;
+      var pos = starPosition(idx + G.totalStarsEver, skyRect.width, skyRect.height);
+      var rng = mulberry32(idx * 1337 + G.totalStarsEver);
+      var sd = { x:pos.x, y:pos.y, size:5+rng()*4,
+        phase:(rng()*3).toFixed(2), speed:(2+rng()*2).toFixed(2),
+        points:5+(idx%5) };
+      var worth = getEffectiveLightPerStar();
+      G.stars += worth;
+      G.totalStarsEver++;
+      G.cometStarProgress = (G.cometStarProgress||0)+1;
+      G.skyStars.push(sd);
+      addSkyStarElement(sd, idx);
+    }
+    checkConstellations();
+    updateHUD(); saveGame();
+  }, 'mechanics');
+
+  registerDebugAction('Spawn 100 Stars', function() {
+    for (var i = 0; i < 100; i++) {
+      var skyRect = skyCanvas.getBoundingClientRect();
+      var idx = G.skyStars.length;
+      var pos = starPosition(idx + G.totalStarsEver, skyRect.width, skyRect.height);
+      var rng = mulberry32(idx * 1337 + G.totalStarsEver);
+      var sd = { x:pos.x, y:pos.y, size:5+rng()*4,
+        phase:(rng()*3).toFixed(2), speed:(2+rng()*2).toFixed(2),
+        points:5+(idx%5) };
+      var worth = getEffectiveLightPerStar();
+      G.stars += worth;
+      G.totalStarsEver++;
+      G.cometStarProgress = (G.cometStarProgress||0)+1;
+      G.skyStars.push(sd);
+      addSkyStarElement(sd, idx);
+    }
+    checkConstellations();
+    updateHUD(); saveGame();
+  }, 'mechanics');
+
+  registerDebugAction('Complete 5 Constellations', function() {
+    var had = G.upgrades['M4'];
+    G.upgrades['M4'] = true;
+    G.constellationsCompleted = (G.constellationsCompleted || 0) + 5;
+    if (!had) G.upgrades['M4'] = had;
+    updateHUD(); saveGame();
+  }, 'mechanics');
+
+  // ---- time ----
+  registerDebugAction('Pause / Resume Time', function() {
+    _dbgTimePaused = !_dbgTimePaused;
+    debugLog('time ' + (_dbgTimePaused ? 'paused' : 'resumed'));
+  }, 'time');
+
+  function _simTicks(n) {
+    var wasPaused = _dbgTimePaused;
+    _dbgTimePaused = false;
+    for (var i = 0; i < n; i++) {
+      _lastTick = Date.now() - 1000; // forces dt=1s on next tick call
+      tick();
+    }
+    _dbgTimePaused = wasPaused;
+    updateHUD(); saveGame();
+  }
+
+  registerDebugAction('Simulate 30s', function() {
+    _simTicks(30);
+  }, 'time');
+
+  registerDebugAction('Simulate 5 min', function() {
+    _simTicks(300);
+  }, 'time');
+
+  // ---- prestige ----
+  registerDebugAction('Make Prestige Available', function() {
+    if (G.totalStarsEver < 5000) G.totalStarsEver = 5000;
+    G.upgrades['M6'] = true; // parent of M7
+    G.upgrades['M7'] = true; // Supernova node — enables canPrestige()
+    updateHUD(); saveGame();
+  }, 'prestige');
+
+  registerDebugAction('Trigger Prestige Now', function() {
+    doPrestige();
+  }, 'prestige');
+
+  registerDebugAction('+1 Affinity', function() {
+    G.affinity += 1;
+    updateHUD(); saveGame();
+  }, 'prestige');
+});
