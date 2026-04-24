@@ -10,7 +10,7 @@
   --violet: #9b50e0;
   --amber: #e09050;
   --white-light: #e8f4ff;
-  --hud-h: 52px;
+  --hud-h: 70px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,10 +25,26 @@ html, body {
   -webkit-user-select: none;
 }
 
+/* ===== HEADER STRIP ===== */
+#header-strip {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 18px;
+  background: transparent;
+  color: #5a5a7a;
+  font-size: 9pt;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  z-index: 110;
+}
+
 /* ===== HUD ===== */
 #hud {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 18px; left: 0; right: 0;
   height: var(--hud-h);
   background: rgba(8,8,24,0.92);
   border-bottom: 1px solid rgba(75,200,240,0.2);
