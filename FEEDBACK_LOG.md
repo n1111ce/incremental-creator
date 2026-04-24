@@ -16,6 +16,24 @@ Entry format:
 
 ---
 
+## game-005-prism-forge — 2026-04-24
+**Liked:**
+- Multiple currencies (light + gems)
+- Multiple ways of getting points — variety of income sources felt good
+**Disliked:**
+- No in-game guide for new mechanics: player didn't know what the Golem was, whether to click it, what the void (purple) prism did, what the mirrors did. Mechanics appeared with no explanation.
+- Prestige didn't work / wasn't reachable in the session
+- HUD stat bar is too cluttered — wants simple overlaid buttons rather than a labeled row of stats
+**Raw quotes:**
+- "i liked the multiple curencies"
+- "i liked the multiple ways of getting points"
+- "no guide ingame, i dont know what a golem is, if i need to click it, what a purple prism is what a mirror is!"
+- "no pristige"
+- "dont make a bar with scored points, rather, let them be simple overlayed buttons, this way it will look cleaner"
+**Distilled into LESSONS.md?** yes
+
+---
+
 ## game-004-tide-shrine — 2026-04-24
 **Liked:**
 - Colors across the whole scene — managed to make a non-boring look despite being procedural

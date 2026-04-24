@@ -44,7 +44,8 @@ This is the biggest lesson from game-004: even with auto-puller + a random-spawn
 ## UI & feel
 
 - **The upgrade/skill panel must NOT occupy permanent screen space.** It should be a collapsible overlay, drawer, or toggle — the game canvas (the thing you interact with) must fill the screen by default.
-- **Onboarding is mandatory.** The player must be told what to click and why in the first 10 seconds — not discovered. A clear arrow, highlight, or instruction overlay is required. Never assume the player will figure it out.
+- **No HUD stat bars.** A labeled row of stats (gems / light / vault %) is visual clutter. Use small floating overlaid counters at canvas edges or corners — translucent, minimal. The game world fills the screen; numbers are secondary. Buttons (tap targets) also work better as floating elements than as a rigid top bar.
+- **Onboarding is mandatory for EVERY new mechanic, not just session start.** The first-tap tutorial is table stakes. Every mechanic unlock also needs its own moment: when the Golem first appears, a callout must say "TAP the Golem to harvest light." When mirrors appear: "DRAG mirrors to align the beam." One sentence per unlock, visible for ~4s, dismissed by interacting with the object. If the player can't name what the new thing does the instant it appears, the unlock failed — no matter how cool it looks.
 - **The intro sequence must be unmissable.** If the story beat plays while the player is looking elsewhere, it fails. Block interaction until the intro lands, or make the intro part of the first click.
 - Skill trees should be **visible even when locked** — greyed-out future nodes are motivational. Hidden options that unlock later rob the player of anticipation.
 - Story beats can be tiny: a one-line flavour text on each upgrade or milestone does the job without a dialogue system.
@@ -77,7 +78,8 @@ This family of bugs has now burned iterations across TWO games (trunks in game-0
 - **"Doom-clicking one thing."** A single hero clickable + passive background systems = the player feels trapped on one button. Ship a game with 3+ concurrent clickables by mid-game, or the core loop reads as a cookie clicker clone.
 - **Mechanic unlocks that are really just multipliers in disguise.** "Full moon = 3× for 10s", "combo beam = 3× for 8s" — from the player's seat, these are numeric buffs, not new mechanics. If it doesn't change what the player does with their hands, it's a number.
 - **Shipping without a prestige horizon.** Mid-game plays fine, then the tree fills up and the game is over. Prestige is not optional — it's the only thing that makes the final third worth playing.
+- **Prestige must be smoke-tested before ship.** Before announcing the URL, use God Mode: "Vault to 100% → Trigger Prestige Now." Verify the flash fires, state resets, Vault Shards increment, and the tree/HUD update. If any of those break, it does not ship.
 
 ---
 
-*Updated after game-004-tide-shrine playtest (2026-04-24).*
+*Updated after game-005-prism-forge playtest (2026-04-24).*
