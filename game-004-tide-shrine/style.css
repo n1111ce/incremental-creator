@@ -1,0 +1,568 @@
+/* ===== Reset & root ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #0d2030;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f0e8d0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#game-root {
+  position: relative;
+  width: 100%; height: 100dvh;
+  overflow: hidden;
+}
+
+/* ===== Main canvas ===== */
+#main-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  touch-action: none;
+  display: block;
+}
+
+/* ===== Header strip ===== */
+#header-strip {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  text-align: center;
+  font-size: clamp(8px, 1.2vw, 11px);
+  color: rgba(240,232,208,0.55);
+  padding: 4px 8px;
+  pointer-events: none;
+  z-index: 10;
+  letter-spacing: 0.03em;
+}
+
+/* ===== HUD ===== */
+#hud {
+  position: absolute;
+  top: 20px; left: 16px;
+  z-index: 20;
+  background: rgba(10,25,40,0.65);
+  border: 1px solid rgba(120,180,200,0.25);
+  border-radius: 10px;
+  padding: 8px 14px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-icon { font-size: 16px; }
+
+.hud-val {
+  font-size: clamp(16px, 2.5vw, 22px);
+  font-weight: bold;
+  color: #f0e8a0;
+  letter-spacing: 0.02em;
+  min-width: 60px;
+}
+
+.hud-label {
+  font-size: clamp(10px, 1.4vw, 13px);
+  color: rgba(240,232,208,0.65);
+}
+
+#sps-disp {
+  font-size: clamp(9px, 1.3vw, 11px);
+  color: rgba(160,220,200,0.75);
+  font-style: italic;
+}
+
+/* ===== Moon phase HUD ===== */
+#moon-phase-hud {
+  position: absolute;
+  top: 20px; right: 100px;
+  z-index: 20;
+  background: rgba(10,25,40,0.65);
+  border: 1px solid rgba(240,220,120,0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: clamp(10px, 1.4vw, 13px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #f0e8b0;
+  backdrop-filter: blur(4px);
+}
+
+#moon-phase-icon { font-size: 18px; }
+
+/* ===== Combo bar ===== */
+#combo-wrap {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: clamp(160px, 30vw, 280px);
+}
+
+#combo-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: rgba(10,25,40,0.6);
+  border-radius: 5px;
+  border: 1px solid rgba(255,220,100,0.3);
+  overflow: hidden;
+}
+
+#combo-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #d4a830, #f0e060);
+  border-radius: 5px;
+  transition: width 0.2s ease;
+}
+
+#combo-label {
+  font-size: clamp(9px, 1.3vw, 11px);
+  color: rgba(240,220,120,0.8);
+  letter-spacing: 0.05em;
+}
+
+/* ===== Skills button ===== */
+#skills-btn {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: rgba(30,60,90,0.85);
+  border: 2px solid rgba(120,200,220,0.5);
+  border-radius: 12px;
+  color: #b0dce8;
+  font-family: Georgia, serif;
+  font-size: clamp(14px, 2vw, 18px);
+  padding: 10px 28px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  min-width: 120px;
+  min-height: 44px;
+}
+
+#skills-btn:hover,
+#skills-btn:active {
+  background: rgba(40,90,130,0.9);
+  border-color: rgba(160,230,250,0.8);
+  transform: translateX(-50%) scale(1.04);
+}
+
+#skills-btn.pulse-once {
+  animation: btn-pulse 0.6s ease 3;
+}
+
+@keyframes btn-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(100,200,240,0.8); }
+  60%  { box-shadow: 0 0 0 14px rgba(100,200,240,0); }
+  100% { box-shadow: 0 0 0 0 rgba(100,200,240,0); }
+}
+
+/* ===== Settings button ===== */
+#settings-btn {
+  position: absolute;
+  top: 20px; right: 16px;
+  z-index: 30;
+  background: rgba(10,25,40,0.65);
+  border: 1px solid rgba(120,180,200,0.25);
+  border-radius: 8px;
+  color: rgba(240,232,208,0.7);
+  font-size: 18px;
+  width: 44px; height: 44px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+}
+
+#settings-btn:hover,
+#settings-btn:active {
+  background: rgba(30,60,90,0.85);
+}
+
+/* ===== Settings menu ===== */
+#settings-menu {
+  position: absolute;
+  top: 70px; right: 16px;
+  z-index: 40;
+  background: rgba(10,25,40,0.92);
+  border: 1px solid rgba(120,180,200,0.3);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  backdrop-filter: blur(8px);
+  min-width: 160px;
+}
+
+#settings-menu button {
+  background: rgba(30,60,90,0.8);
+  border: 1px solid rgba(120,180,200,0.3);
+  border-radius: 7px;
+  color: #c0dce8;
+  font-family: Georgia, serif;
+  font-size: clamp(12px, 1.6vw, 14px);
+  padding: 8px 14px;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s;
+}
+
+#settings-menu button:hover,
+#settings-menu button:active {
+  background: rgba(40,90,130,0.9);
+}
+
+#reset-btn { color: #e07070 !important; border-color: rgba(220,100,100,0.3) !important; }
+
+/* ===== Skill tree modal ===== */
+#skill-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(5,15,25,0.78);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#skill-modal.open {
+  display: flex;
+}
+
+#skill-modal-box {
+  background: linear-gradient(160deg, #0d2535 0%, #0a1e30 100%);
+  border: 1px solid rgba(120,200,230,0.35);
+  border-radius: 16px;
+  width: min(96vw, 860px);
+  height: min(90dvh, 620px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+}
+
+#skill-modal-head {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(120,200,230,0.2);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+#skill-modal-title {
+  font-size: clamp(16px, 2.5vw, 22px);
+  color: #b0dce8;
+  flex: 1;
+  letter-spacing: 0.06em;
+}
+
+#modal-shell-count {
+  font-size: clamp(13px, 1.8vw, 16px);
+  color: #f0e8a0;
+  background: rgba(240,200,80,0.12);
+  border: 1px solid rgba(240,200,80,0.25);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+#modal-close-btn {
+  background: transparent;
+  border: 1px solid rgba(200,100,80,0.4);
+  border-radius: 6px;
+  color: rgba(220,160,140,0.8);
+  font-size: 18px;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
+  transition: background 0.15s;
+}
+
+#modal-close-btn:hover,
+#modal-close-btn:active { background: rgba(200,100,80,0.2); }
+
+#skill-tree-container {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  padding: 16px;
+}
+
+#skill-tree-svg {
+  display: block;
+  width: 100%;
+  min-height: 480px;
+}
+
+/* Skill node styles */
+.skill-node { cursor: pointer; touch-action: manipulation; }
+.skill-node-bg {
+  transition: filter 0.2s;
+}
+.skill-node-bg.affordable { filter: drop-shadow(0 0 6px rgba(100,220,180,0.7)); }
+.skill-node-bg.owned      { filter: drop-shadow(0 0 4px rgba(80,180,240,0.5)); }
+.skill-node-bg.locked-special { animation: glow-pulse 2.5s ease-in-out infinite; }
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(240,180,60,0.4)); }
+  50%       { filter: drop-shadow(0 0 10px rgba(240,180,60,0.9)); }
+}
+
+.skill-label {
+  font-family: Georgia, serif;
+  pointer-events: none;
+}
+
+/* ===== Import modal ===== */
+#import-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(5,15,25,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#import-modal.open {
+  display: flex;
+}
+
+#import-box {
+  background: #0d2535;
+  border: 1px solid rgba(120,200,230,0.35);
+  border-radius: 12px;
+  padding: 24px;
+  width: min(90vw, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-title {
+  font-size: clamp(15px, 2vw, 18px);
+  color: #b0dce8;
+  letter-spacing: 0.04em;
+}
+
+#import-ta {
+  background: rgba(10,30,50,0.8);
+  border: 1px solid rgba(120,200,230,0.3);
+  border-radius: 7px;
+  color: #c0dce8;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 10px;
+  resize: vertical;
+  min-height: 100px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#import-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+#import-btns button {
+  background: rgba(30,60,90,0.8);
+  border: 1px solid rgba(120,200,230,0.3);
+  border-radius: 7px;
+  color: #c0dce8;
+  font-family: Georgia, serif;
+  font-size: 14px;
+  padding: 8px 18px;
+  cursor: pointer;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* ===== Toast notifications ===== */
+#toast-container {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  align-items: center;
+}
+
+.toast {
+  background: rgba(10,30,50,0.88);
+  border: 1px solid rgba(120,200,230,0.4);
+  border-radius: 8px;
+  color: #d0eef8;
+  font-size: clamp(12px, 1.6vw, 15px);
+  padding: 7px 18px;
+  animation: toast-in 0.3s ease, toast-out 0.4s ease 2.6s forwards;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+  max-width: 90vw;
+}
+
+.toast.pearl-toast {
+  border-color: rgba(200,160,240,0.6);
+  color: #e0c8f8;
+  background: rgba(30,10,60,0.88);
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+
+/* ===== Flash overlay ===== */
+#flash-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 80;
+  background: rgba(240,240,180,0);
+  transition: background 0.15s;
+}
+
+/* ===== Intro overlay ===== */
+#intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(5,12,22,0.96);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  backdrop-filter: blur(8px);
+}
+
+#intro-box {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: center;
+  max-width: min(80vw, 520px);
+}
+
+.intro-line {
+  font-size: clamp(16px, 2.8vw, 26px);
+  color: #d0e8f0;
+  line-height: 1.5;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  transition: opacity 0.8s ease;
+}
+
+.intro-line::before { content: '"'; }
+.intro-line::after  { content: '"'; }
+
+#intro-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.6s ease;
+}
+
+#intro-arrow-bounce {
+  font-size: clamp(24px, 4vw, 36px);
+  color: #f0e890;
+  animation: arrow-bounce 1.1s ease-in-out infinite;
+}
+
+#intro-arrow-text {
+  font-size: clamp(13px, 2vw, 18px);
+  color: #f0e890;
+  letter-spacing: 0.06em;
+}
+
+@keyframes arrow-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(8px); }
+}
+
+/* ===== Shell popup numbers ===== */
+.shell-popup {
+  font-family: Georgia, serif;
+  font-size: clamp(13px, 2vw, 18px);
+  font-weight: bold;
+  fill: #f0e890;
+  pointer-events: none;
+  animation: popup-rise 1.2s ease forwards;
+}
+
+.pearl-popup {
+  fill: #d0a8f8;
+  font-size: clamp(14px, 2.2vw, 20px);
+}
+
+@keyframes popup-rise {
+  0%   { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-40px); }
+}
+
+/* ===== Seagull ===== */
+.seagull {
+  animation: gull-flap 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes gull-flap {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(0.6); }
+}
+
+/* ===== Moon full glow pulse ===== */
+.moon-full-glow {
+  animation: moon-glow 2s ease-in-out infinite;
+}
+
+@keyframes moon-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(240,240,160,0.5)); }
+  50%       { filter: drop-shadow(0 0 24px rgba(240,240,160,1.0)); }
+}
+
+/* ===== Lighthouse beam ===== */
+#lh-beam {
+  transform-origin: bottom center;
+}
+
+/* ===== Scrollbar for skill tree ===== */
+#skill-tree-container::-webkit-scrollbar { width: 6px; height: 6px; }
+#skill-tree-container::-webkit-scrollbar-track { background: transparent; }
+#skill-tree-container::-webkit-scrollbar-thumb {
+  background: rgba(120,200,230,0.3);
+  border-radius: 3px;
+}
