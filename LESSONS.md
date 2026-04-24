@@ -32,6 +32,17 @@ Format: one-line rule, then optional **Why:** if non-obvious. Merge duplicates. 
 - Skill trees should be **visible even when locked** — greyed-out future nodes are motivational. Hidden options that unlock later rob the player of anticipation.
 - Story beats can be tiny: a one-line flavour text on each upgrade or milestone does the job without a dialogue system.
 
+## Positioning & SVG (the "flies from top-left" bug family)
+
+This family of bugs has now burned iterations across TWO games (trunks in game-002, twin anvil in game-003). Root cause each time: a broken contract between CSS, SVG attributes, and CSS transforms. Rules to prevent it forever:
+
+- **On SVG elements, NEVER use `.className = 'foo'` — it silently fails.** `.className` on SVG is a read-only `SVGAnimatedString` object. Assigning a string to it does not set the `class` attribute, the CSS rule never applies, and the element renders at broken size/position. Always use `setAttribute('class', 'foo')` or `classList.add('foo')` for SVG. (Plain `.className =` is fine on HTML elements — but the moment you touch an SVG, switch.)
+- **Position SVG groups via the `transform` ATTRIBUTE, not CSS `transform`.** Use `outer.setAttribute('transform', 'translate(x,y)')` on the positioning group. If you ALSO want a CSS-animated transform (pulse, spin, bounce), put it on a SEPARATE INNER group. Mixing CSS transform onto the positioning group will stomp the translate and snap the thing to (0,0).
+- **Never compute a flight path from an element's `getBoundingClientRect()` until you have proof it's laid out at its final size/position.** If the element was just created, reparented, or its stylesheet class was just set, force a reflow first (read `el.offsetWidth`) before measuring — otherwise you may measure a 0×0 box and animate from its top-left corner.
+- **When reparenting an existing SVG into a new container mid-game (e.g. for a "second anvil" unlock), re-verify any cached `getBoundingClientRect()`-dependent animation the next frame.** Reparenting invalidates layout; animations keyed on the old position will start at the wrong origin.
+
+**If a new object "appears at or flies from the top-left corner," this family is the first suspect** — grep for `\.className\s*=` on SVG nodes and for CSS transforms on SVG positioning groups before debugging anything else.
+
 ## Assets & visuals
 
 - **Squares and lines are not visuals.** Every clickable element needs a recognisable silhouette — a tree shape, a mushroom, a glowing orb — not a rounded rectangle. Invest in procedural SVG shapes that read as *things*.

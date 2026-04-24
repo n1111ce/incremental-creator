@@ -377,7 +377,7 @@ function buildTwinAnvil() {
     svg2.setAttribute('id', 'forge-svg-2');
     svg2.setAttribute('xmlns', svgNS);
     svg2.setAttribute('viewBox', '0 0 240 180');
-    svg2.className = 'forge-svg-2';
+    svg2.setAttribute('class', 'forge-svg-2');
     svg2.style.touchAction = 'none';
     svg2.innerHTML = document.getElementById('forge-svg').innerHTML;
 
