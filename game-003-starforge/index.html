@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Starforge</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="game-root">
+
+  <svg id="sky-canvas" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="star-glow">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="star-glow-strong">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="anvil-glow">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <radialGradient id="sky-bg" cx="50%" cy="60%" r="75%">
+        <stop offset="0%" stop-color="hsl(250,40%,14%)"/>
+        <stop offset="100%" stop-color="hsl(240,30%,5%)"/>
+      </radialGradient>
+    </defs>
+    <rect id="sky-bg-rect" width="100%" height="100%" fill="url(#sky-bg)"/>
+    <g id="constellation-layer"></g>
+    <g id="star-layer"></g>
+    <g id="particle-layer"></g>
+    <g id="flying-star-layer"></g>
+  </svg>
+
+  <div id="forge-area">
+    <svg id="forge-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180">
+      <defs>
+        <radialGradient id="ember-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fff8e0" stop-opacity="1"/>
+          <stop offset="40%" stop-color="#ffb830" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#ff6000" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="ember-filter">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- Anvil group — hit area -->
+      <g id="anvil-hit" style="cursor:pointer">
+        <!-- invisible expanded hitbox -->
+        <rect x="60" y="40" width="120" height="140" fill="transparent"/>
+        <!-- Hammer group (swings on click) -->
+        <g id="hammer-group" transform="rotate(-20, 195, 70)">
+          <rect x="178" y="54" width="6" height="38" rx="2" fill="#8a7a6a"/>
+          <rect x="169" y="48" width="22" height="12" rx="3" fill="#c8a060"/>
+          <rect x="171" y="51" width="10" height="6" rx="1" fill="#e0b870" opacity="0.7"/>
+        </g>
+        <!-- Anvil body -->
+        <g id="anvil-body">
+          <!-- Pedestal -->
+          <rect x="103" y="150" width="34" height="16" rx="3" fill="#3a3028"/>
+          <rect x="99" y="148" width="42" height="6" rx="2" fill="#4a3d30"/>
+          <!-- Main body trapezoid -->
+          <polygon points="85,148 155,148 162,105 78,105" fill="#4a3d30"/>
+          <!-- Top face -->
+          <rect x="76" y="92" width="88" height="16" rx="4" fill="#5a4a38"/>
+          <!-- Horn (right side) -->
+          <polygon points="162,100 188,108 162,114" fill="#4a3d30"/>
+          <polygon points="162,100 188,108 162,103" fill="#5a4a38" opacity="0.6"/>
+          <!-- Highlights -->
+          <rect x="78" y="93" width="84" height="4" rx="2" fill="#7a6a54" opacity="0.6"/>
+          <polygon points="87,148 153,148 160,108 80,108" fill="#3d3028" opacity="0.4"/>
+        </g>
+        <!-- Ember on anvil top -->
+        <g id="ember-group" filter="url(#ember-filter)">
+          <circle id="ember-outer" cx="120" cy="88" r="14" fill="url(#ember-glow)" opacity="0.7"/>
+          <circle id="ember-core" cx="120" cy="88" r="6" fill="#ffcc60" opacity="0.9"/>
+          <circle id="ember-hot" cx="120" cy="88" r="3" fill="white" opacity="0.95"/>
+        </g>
+      </g>
+    </svg>
+    <div id="heat-bar-wrap">
+      <div id="heat-bar-fill"></div>
+      <span id="heat-label">Heat</span>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div class="h-line">☆ <span class="h-val" id="stars-disp">0</span> Light</div>
+    <div class="h-line">Affinity <span class="h-aff" id="affinity-disp">×1.00</span></div>
+  </div>
+
+  <div id="header-strip">① Tap anvil → ② Forge stars → ③ Spend Light in Skill Tree</div>
+
+  <button id="skills-btn" aria-label="Open skills">✦ Skills</button>
+  <button id="settings-btn" aria-label="Settings">⚙</button>
+
+  <div id="skills-drawer">
+    <div id="drawer-head">
+      <span id="drawer-title">Skill Tree</span>
+      <button id="drawer-close" aria-label="Close">✕</button>
+    </div>
+    <div id="drawer-body"></div>
+  </div>
+
+  <div id="settings-menu">
+    <button id="export-btn">Export Save</button>
+    <button id="import-btn">Import Save</button>
+    <button id="reset-btn">Reset Game</button>
+    <button id="settings-close">✕ Close</button>
+  </div>
+
+  <div id="import-modal" style="display:none">
+    <div id="import-box">
+      <div class="modal-title">Paste Save String</div>
+      <textarea id="import-ta" placeholder="Paste base64 save here..."></textarea>
+      <div id="import-btns">
+        <button id="import-confirm">Import</button>
+        <button id="import-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="supernova-btn-wrap">
+    <button id="supernova-btn">✦ Supernova</button>
+  </div>
+
+  <div id="confirm-modal" style="display:none">
+    <div id="confirm-box">
+      <div class="modal-title">Supernova</div>
+      <div id="confirm-msg"></div>
+      <div id="confirm-btns">
+        <button id="confirm-yes">Ignite</button>
+        <button id="confirm-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <div id="flash-overlay"></div>
+
+  <div id="intro-overlay">
+    <div id="intro-lines">
+      <div class="intro-line" id="il-1">"The heavens are dark."</div>
+      <div class="intro-line" id="il-2">"You are the last Starsmith."</div>
+      <div class="intro-line" id="il-3">"Tap the anvil — forge light from fallen embers."</div>
+    </div>
+    <div id="intro-anvil-hint" style="opacity:0">
+      <div id="intro-pulse-ring"></div>
+      <div id="intro-hint-text">Tap the anvil below to begin</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Load order: data → canvas → ui → game → debug -->
+<script src="data.js"></script>
+<script src="canvas.js"></script>
+<script src="ui.js"></script>
+<script src="game.js"></script>
+<script src="../debug.js"></script>
+
+</body>
+</html>
