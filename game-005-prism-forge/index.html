@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Prism Forge</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- HUD bar -->
+  <div id="hud">
+    <div id="hud-gems"><span class="hud-icon">💎</span> <span id="hud-gems-val">0</span></div>
+    <div id="hud-light"><span class="hud-icon">✨</span> <span id="hud-light-val">0</span> <span id="hud-light-ps" class="hud-sub">(+0/s)</span></div>
+    <div id="hud-vault">
+      <span class="hud-vault-label">VAULT</span>
+      <div id="vault-bar-wrap"><div id="vault-bar-fill"></div></div>
+      <span id="hud-vault-pct">0%</span>
+    </div>
+    <div id="hud-shards" title="Vault Shards"><span class="hud-icon">✦</span> <span id="hud-shards-val">0</span></div>
+    <button id="btn-upgrades" class="hud-btn">✦ UPGRADES</button>
+    <button id="btn-export" class="hud-btn hud-btn-sm">Export</button>
+    <button id="btn-import" class="hud-btn hud-btn-sm">Import</button>
+    <button id="btn-prestige" class="hud-btn hud-prestige hidden">RESTORE VAULT ✦</button>
+  </div>
+
+  <!-- Game canvas -->
+  <svg id="game-canvas" xmlns="http://www.w3.org/2000/svg">
+    <defs id="svg-defs"></defs>
+    <g id="layer-stars"></g>
+    <g id="layer-bg"></g>
+    <g id="layer-vats"></g>
+    <g id="layer-mold"></g>
+    <g id="layer-prisms"></g>
+    <g id="layer-mirrors"></g>
+    <g id="layer-beams"></g>
+    <g id="layer-nodes"></g>
+    <g id="layer-orbs"></g>
+    <g id="layer-golem"></g>
+    <g id="layer-storm"></g>
+    <g id="layer-particles"></g>
+  </svg>
+
+  <!-- Upgrade modal -->
+  <div id="upgrade-modal" class="modal hidden">
+    <div class="modal-box upgrade-box">
+      <div class="modal-header">
+        <h2>Chromatic Upgrades</h2>
+        <button class="modal-close" id="upgrade-close">✕</button>
+      </div>
+      <div class="modal-hint">✨ Spend Light to unlock upgrades. Gold diamonds = mechanic unlocks.</div>
+      <div id="upgrade-tree-container">
+        <svg id="upgrade-tree-svg"></svg>
+      </div>
+      <div id="upgrade-tooltip" class="upgrade-tooltip hidden"></div>
+    </div>
+  </div>
+
+  <!-- Save modal -->
+  <div id="save-modal" class="modal hidden">
+    <div class="modal-box save-box">
+      <div class="modal-header">
+        <h2 id="save-modal-title">Export Save</h2>
+        <button class="modal-close" id="save-close">✕</button>
+      </div>
+      <p id="save-modal-desc">Copy this code to transfer your save to another device:</p>
+      <textarea id="save-textarea" rows="6" spellcheck="false"></textarea>
+      <div class="save-actions">
+        <button id="save-copy-btn" class="hud-btn">Copy to Clipboard</button>
+        <button id="save-import-btn" class="hud-btn hidden">Import Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding overlay -->
+  <div id="onboard-overlay">
+    <div id="onboard-box">
+      <div id="onboard-title">The Vault awakens.</div>
+      <div id="onboard-sub">Tap a glowing crystal to begin.</div>
+    </div>
+    <div id="onboard-arrow">↑</div>
+  </div>
+
+  <!-- Prestige flash overlay -->
+  <div id="prestige-flash" class="hidden">
+    <div id="prestige-msg"></div>
+  </div>
+
+  <!-- Tooltip hints -->
+  <div id="hint-vat" class="hint-bubble hidden">Drag orbs to the vats to forge gems →</div>
+  <div id="hint-upgrade" class="hint-bubble hidden">Open UPGRADES to unlock new powers ✦</div>
+  <div id="storm-result" class="storm-result hidden"></div>
+
+  <script src="./data.js"></script>
+  <script src="./canvas.js"></script>
+  <script src="./ui.js"></script>
+  <script src="./game.js"></script>
+  <script src="../debug.js"></script>
+</body>
+</html>
