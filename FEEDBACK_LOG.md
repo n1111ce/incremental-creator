@@ -16,6 +16,27 @@ Entry format:
 
 ---
 
+## game-003-starforge — 2026-04-24
+**Liked:**
+- Game concept — creative, cool theme
+- Settings menu (reset / export save / import save) — felt useful and well-placed
+- The skills themselves (content)
+**Disliked:**
+- Skill drawer/menu UI — wants a larger popup / modal, not a side drawer
+- Upgrades presented as a flat list — "boring thing one by one". Wants a VISUAL branching tree: small squares connected by lines that branch out into further upgrades.
+- Missing game-breaking payoffs: numeric upgrades are fine as stepping stones, but the tree needs nodes that UNLOCK NEW MECHANICS entirely — a dopamine rush of "whoa, a whole new thing just appeared in my game"
+**Raw quotes:**
+- "liked the game idea! creative and cool"
+- "liked the setting menu of restart save and import saved things"
+- "skills are very cool, but i dislike the menu idea"
+- "make the menu appear larger like a pop up on the screen"
+- "make the upgrades be small squares that branch out into further upgrades? like not just a list of boring thing one by one"
+- "keep some boring ones, but they eventually lead you to a skill that adds a whole new functionality in the game! like you have a game breaking upgrade"
+- "make them many functionalities! this way you get a rush of dopamine"
+**Distilled into LESSONS.md?** yes
+
+---
+
 ## game-002-mycelium-pact — 2026-04-24
 **Liked:**
 - (nothing reported yet — playtest aborted early)

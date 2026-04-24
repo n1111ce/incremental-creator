@@ -15,7 +15,7 @@ function fmt(n) {
 // ---------------------------------------------------------------------------
 // Star spawning
 // ---------------------------------------------------------------------------
-function spawnStar() {
+function spawnStar(whichAnvil) {
   var skyRect = skyCanvas.getBoundingClientRect();
   var skyW = skyRect.width;
   var skyH = skyRect.height;
@@ -24,32 +24,35 @@ function spawnStar() {
   var pos = starPosition(idx + G.totalStarsEver, skyW, skyH);
   var rng = mulberry32(idx * 1337 + G.totalStarsEver);
   var starData = {
-    x: pos.x,
-    y: pos.y,
+    x: pos.x, y: pos.y,
     size: 5 + rng() * 4,
     phase: (rng() * 3).toFixed(2),
     speed: (2 + rng() * 2).toFixed(2),
     points: 5 + (idx % 5)
   };
 
-  var worth = getStarWorth();
+  var worth = getEffectiveLightPerStar();
   G.stars += worth;
   G.totalStarsEver++;
-  G.heat = 0;
+  G.cometStarProgress = (G.cometStarProgress || 0) + 1;
+
+  if (whichAnvil === 2) G.twinHeat = 0;
+  else G.heat = 0;
+
   G.skyStars.push(starData);
 
-  debugLog('star spawned #' + G.totalStarsEver + ' (+' + worth + ' Light)');
+  debugLog('star spawned #' + G.totalStarsEver + ' (+' + worth.toFixed(1) + ' Light)');
 
-  // Fly animation then add to sky
   animateFlyingStar(pos.x, pos.y, function() {
     addSkyStarElement(starData, idx);
     checkConstellations();
+    checkCometTrigger();
     checkMilestoneToasts();
     updateSkyHue(G.skyHue);
-  });
+  }, whichAnvil);
 
-  spawnSparks(8);
-  swingHammer();
+  spawnSparks(8, whichAnvil);
+  swingHammer(whichAnvil);
 }
 
 // ---------------------------------------------------------------------------
@@ -59,7 +62,6 @@ function checkConstellations() {
   var stars = G.skyStars;
   var n = stars.length;
   if (n < 2) return;
-  // Every 5 stars: connect newest to nearest existing
   if (n % 5 !== 0) return;
 
   var newest = stars[n - 1];
@@ -75,6 +77,13 @@ function checkConstellations() {
   var other = stars[bestIdx];
   G.constellationLines.push({ x1: newest.x, y1: newest.y, x2: other.x, y2: other.y });
   addConstellationLine(newest.x, newest.y, other.x, other.y);
+
+  // Constellation Power (M4) — increment on each group
+  if (G.upgrades['M4']) {
+    G.constellationsCompleted = (G.constellationsCompleted || 0) + 1;
+    showToast('Constellation! Bonus ×' + getConstellationMult().toFixed(2));
+  }
+
   debugLog('constellation line drawn');
 }
 
@@ -101,45 +110,69 @@ function checkMilestoneToasts() {
 // ---------------------------------------------------------------------------
 var _introEnded = false;
 
-function onAnvilClick(e) {
+function onAnvilClick(e, whichAnvil) {
   e.preventDefault();
   e.stopPropagation();
+  whichAnvil = whichAnvil || 1;
 
   if (!_introEnded) {
     _introEnded = true;
     G._introSeen = true;
     dismissIntro();
-    // Ember burst on first click
-    spawnSparks(14);
+    spawnSparks(14, 1);
     debugLog('intro dismissed');
   }
 
-  var gained = getClickPower() * G.affinity;
-  G.heat = Math.min(100, G.heat + gained);
-  swingHammer();
-  spawnSparks(4);
-  updateEmber(G.heat);
+  // Combo tracking (F4)
+  var now = Date.now();
+  if (G.upgrades['F4']) {
+    var window_ = getComboWindow() * 1000; // ms
+    if (G.comboLastStrike && (now - G.comboLastStrike) < window_) {
+      G.comboCount = Math.min(5, (G.comboCount || 0) + 1);
+    } else {
+      G.comboCount = 1;
+    }
+    G.comboLastStrike = now;
+    // Show combo UI near anvil
+    var hitEl = (whichAnvil === 2 && anvilHit2) ? anvilHit2 : anvilHit;
+    var rect = hitEl.closest('svg').getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height * 0.4;
+    showComboUI(G.comboCount, cx, cy);
+  }
 
-  if (G.heat >= 100) {
-    spawnStar();
-    // First time heat hits 100 in this session: sky flash toast
-    if (!G._firstSessionHeat100) {
-      G._firstSessionHeat100 = true;
-      flashSkyZone();
-      showToast('A star!');
+  var heatGained = getClickPower() * getComboMult() * G.affinity;
+
+  if (whichAnvil === 2) {
+    G.twinHeat = Math.min(100, (G.twinHeat || 0) + heatGained);
+    swingHammer(2);
+    spawnSparks(4, 2);
+    updateEmber2(G.twinHeat);
+    if (G.twinHeat >= 100) {
+      spawnStar(2);
+      if (!G._firstSessionHeat100) { G._firstSessionHeat100 = true; flashSkyZone(); showToast('A star!'); }
+    }
+  } else {
+    G.heat = Math.min(100, G.heat + heatGained);
+    swingHammer(1);
+    spawnSparks(4, 1);
+    updateEmber(G.heat);
+    if (G.heat >= 100) {
+      spawnStar(1);
+      if (!G._firstSessionHeat100) { G._firstSessionHeat100 = true; flashSkyZone(); showToast('A star!'); }
     }
   }
-  updateHUD();
-}
 
-function flashSkyZone() {
-  var sky = document.getElementById('sky-canvas');
-  sky.style.transition = 'filter 0s';
-  sky.style.filter = 'brightness(2) saturate(2)';
-  setTimeout(function() {
-    sky.style.transition = 'filter 0.6s';
-    sky.style.filter = '';
-  }, 50);
+  // Strike chain (F8)
+  if (G.upgrades['F8']) {
+    G.strikesSinceChain = (G.strikesSinceChain || 0) + 1;
+    if (G.strikesSinceChain >= 10) {
+      G.strikesSinceChain = 0;
+      fireChainLightning();
+    }
+  }
+
+  updateHUD();
 }
 
 // ---------------------------------------------------------------------------
@@ -147,18 +180,34 @@ function flashSkyZone() {
 // ---------------------------------------------------------------------------
 function buyUpgrade(upg) {
   if (G.upgrades[upg.id]) return;
+  if (!isParentOwned(upg)) { showToast('Requires ' + upg.parent); return; }
   if (upg.cost > 0 && G.stars < upg.cost) { showToast('Not enough Light'); return; }
-  if (upg.requires_total && G.totalStarsEver < upg.requires_total) {
-    showToast('Need ' + upg.requires_total + ' total stars first');
+  if (upg.requiresTotal && G.totalStarsEver < upg.requiresTotal) {
+    showToast('Need ' + upg.requiresTotal + ' total stars first');
     return;
   }
   G.stars -= upg.cost;
   G.upgrades[upg.id] = true;
   debugLog('bought: ' + upg.id);
-  flashNode(upg.id);
+  applyUpgradeEffect(upg);
+  flashNodeModal(upg.id);
   showToast(upg.name + ' unlocked.');
-  renderDrawer();
+  renderSkillModal();
   updateHUD();
+}
+
+function applyUpgradeEffect(upg) {
+  var eff = upg.effect;
+  if (!eff) return;
+  if (eff.type === 'skyCapacity') {
+    G.skyCapacity = (G.skyCapacity || 60) + eff.value;
+  }
+  if (eff.type === 'unlock_twin_anvil') {
+    buildTwinAnvil();
+  }
+  if (eff.type === 'unlock_moon_phase') {
+    buildMoon();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -169,19 +218,26 @@ function doPrestige() {
   G.affinity += gain;
   G.supernovaCount++;
 
-  // Reset
   G.stars = 0;
   G.heat = 0;
+  G.twinHeat = 0;
   G.upgrades = {};
   G.skyStars = [];
   G.constellationLines = [];
+  G.comboCount = 0; G.comboLastStrike = 0;
+  G.strikesSinceChain = 0;
+  G.shootingStarNextAt = 0;
+  G.moonPhaseTime = 0;
+  G.nebulaDriftNextAt = 0;
+  G.constellationsCompleted = 0;
+  G.cometStarProgress = 0;
+  G.cometActive = false;
   G._firstStarToasted = false;
   G._tenthStarToasted = false;
   G._firstConstellationToasted = false;
   G._firstSessionHeat100 = false;
   G.skyHue = 250;
 
-  // Visual reset
   starLayer.innerHTML = '';
   constellationLayer.innerHTML = '';
 
@@ -189,7 +245,7 @@ function doPrestige() {
   showToast('Supernova. The cycle begins again.');
   debugLog('supernova #' + G.supernovaCount + ' affinity now ' + G.affinity.toFixed(2));
 
-  renderDrawer();
+  renderSkillModal();
   updateHUD();
   saveGame();
 }
@@ -214,35 +270,69 @@ function checkSkyDrift() {
 // ---------------------------------------------------------------------------
 var _lastTick = Date.now();
 var _lastSave = Date.now();
-var _lastDrawerRefresh = Date.now();
+var _lastModalRefresh = Date.now();
 
 function tick() {
   var now = Date.now();
   var dt = Math.min((now - _lastTick) / 1000, 0.2);
   _lastTick = now;
 
-  // Auto heat
+  // Auto heat (primary anvil)
   var auto = getAutoHeat();
   if (auto > 0) {
     G.heat = Math.min(100, G.heat + auto * dt);
     if (G.heat >= 100) {
-      spawnStar();
-      if (!G._firstSessionHeat100) {
-        G._firstSessionHeat100 = true;
-        flashSkyZone();
-        showToast('A star!');
+      spawnStar(1);
+      if (!G._firstSessionHeat100) { G._firstSessionHeat100 = true; flashSkyZone(); showToast('A star!'); }
+    }
+    // Twin anvil also gets auto heat if built
+    if (G.upgrades['F6']) {
+      G.twinHeat = Math.min(100, (G.twinHeat || 0) + auto * dt);
+      if (G.twinHeat >= 100) {
+        spawnStar(2);
       }
+      updateEmber2(G.twinHeat);
+      var fill2 = document.getElementById('heat-bar-fill-2');
+      if (fill2) fill2.style.width = Math.min(100, G.twinHeat) + '%';
     }
   }
 
   // Heat decay
-  if (G.heat > 0) {
-    G.heat = Math.max(0, G.heat - getDecayRate() * dt);
-  }
+  if (G.heat > 0) G.heat = Math.max(0, G.heat - getDecayRate() * dt);
+  if (G.upgrades['F6'] && G.twinHeat > 0) G.twinHeat = Math.max(0, G.twinHeat - getDecayRate() * dt);
 
   updateEmber(G.heat);
   updateHUD();
   checkSkyDrift();
+
+  // Moon phase update (S6)
+  if (G.upgrades['S6']) {
+    G.moonPhaseTime = (G.moonPhaseTime || 0) + dt;
+    updateMoonPhase(G.moonPhaseTime);
+  }
+
+  // Shooting star scheduling (S4)
+  if (G.upgrades['S4']) {
+    if (!G.shootingStarNextAt || G.shootingStarNextAt === 0) {
+      G.shootingStarNextAt = now + (15000 + Math.random() * 15000);
+    }
+    if (now >= G.shootingStarNextAt) {
+      spawnShootingStar();
+      var interval = G.upgrades['S5'] ? 7500 + Math.random() * 7500 : 15000 + Math.random() * 15000;
+      G.shootingStarNextAt = now + interval;
+    }
+  }
+
+  // Nebula drift (S8)
+  if (G.upgrades['S8']) {
+    if (!G.nebulaDriftNextAt || G.nebulaDriftNextAt === 0) {
+      G.nebulaDriftNextAt = now + 30000;
+    }
+    if (now >= G.nebulaDriftNextAt) {
+      spawnNebulaStar();
+      G.nebulaDriftNextAt = now + 30000;
+    }
+  }
 
   // Autosave every 5s
   if (now - _lastSave > 5000) {
@@ -250,10 +340,10 @@ function tick() {
     _lastSave = now;
   }
 
-  // Sync open drawer every 2s
-  if (_drawerOpen && now - _lastDrawerRefresh > 2000) {
-    renderDrawer();
-    _lastDrawerRefresh = now;
+  // Sync open modal every 2s
+  if (_modalOpen && now - _lastModalRefresh > 2000) {
+    renderSkillModal();
+    _lastModalRefresh = now;
   }
 }
 
@@ -266,34 +356,42 @@ function init() {
   initCanvas();
   initUI();
 
-  // Wire anvil click — POINTER EVENTS ONLY
-  document.getElementById('anvil-hit').addEventListener('pointerdown', onAnvilClick);
+  document.getElementById('anvil-hit').addEventListener('pointerdown', function(e) {
+    onAnvilClick(e, 1);
+  });
 
-  // Restore visual state
+  // Rebuild visual state from save
   rebuildAllStars();
   rebuildAllConstellationLines();
   updateSkyHue(G.skyHue);
   updateEmber(G.heat);
   updateHUD();
 
+  // Restore mechanics from save
+  if (G.upgrades['F6']) {
+    buildTwinAnvil();
+    setTimeout(function() { updateEmber2(G.twinHeat || 0); }, 100);
+  }
+  if (G.upgrades['S6']) {
+    buildMoon();
+    updateMoonPhase(G.moonPhaseTime || 0);
+  }
+
   // Intro
   if (!G._introSeen && !hasSave()) {
-    runIntro(function() {
-      // After intro, next anvil click is the first click — handled in onAnvilClick
-    });
+    runIntro(function() {});
   } else {
     _introEnded = true;
     document.getElementById('intro-overlay').style.display = 'none';
   }
 
-  // Autosave on tab hide
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) saveGame();
   });
 
   setInterval(tick, 100);
 
-  debugLog('starforge init — totalStarsEver:' + G.totalStarsEver);
+  debugLog('starforge v2 init — totalStarsEver:' + G.totalStarsEver);
 }
 
 document.addEventListener('DOMContentLoaded', init);

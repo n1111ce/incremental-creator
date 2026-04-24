@@ -14,6 +14,15 @@ Format: one-line rule, then optional **Why:** if non-obvious. Merge duplicates. 
 ## Core loop
 
 - Keep the number of menus minimal — one panel, straight path. Confirmed: players noticed and liked it. Don't add tabs or sub-screens unless absolutely necessary.
+- **Save portability controls are a feature, not plumbing.** An Export / Import / Reset menu earned unprompted praise — keep it visible (but not intrusive) in every game.
+
+## Skill trees & upgrades
+
+- **Upgrades must be a visual graph, not a list.** Small square/diamond nodes connected by lines that branch. A flat list reads as "boring, one by one" even when the content is good. The visible topology IS the dopamine — the player plans a path before they can afford it.
+- **Present the tree as a large centered popup/modal**, not a side drawer. The drawer felt cramped even when collapsible. Modal: tap outside or an X to close, covers most of the screen so nodes breathe.
+- **Numeric upgrades must lead to mechanic unlocks.** Every branch needs 2–3 "boring" numeric nodes (+click, faster auto, bigger multiplier) that *gate* a node which unlocks a brand-new game mechanic (combo system, falling-stars minigame, second interactable, moon phase buff, passive generator, etc.). The payoff after the grind is what makes grinding feel good.
+- **Many mechanics, not just many numbers.** Aim for 4–6 mechanic-unlock nodes per game. The "whoa, a whole new thing just appeared" moment is the strongest dopamine lever — stack several of them.
+- **Show the tree's full shape from day one** — locked mechanic-unlock nodes should look special (glowing frame, distinct icon) even when unaffordable, so the player sees the game-breakers on the horizon and plans toward them.
 
 ## UI & feel
 
@@ -40,4 +49,4 @@ Format: one-line rule, then optional **Why:** if non-obvious. Merge duplicates. 
 
 ---
 
-*Updated after game-002-mycelium-pact playtest (2026-04-24).*
+*Updated after game-003-starforge playtest (2026-04-24).*

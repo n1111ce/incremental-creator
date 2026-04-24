@@ -34,6 +34,9 @@
     <g id="star-layer"></g>
     <g id="particle-layer"></g>
     <g id="flying-star-layer"></g>
+    <g id="shooting-star-layer"></g>
+    <g id="chain-lightning-layer"></g>
+    <g id="comet-layer"></g>
   </svg>
 
   <div id="forge-area">
@@ -50,32 +53,23 @@
         </filter>
       </defs>
       <!-- Anvil group — hit area -->
-      <g id="anvil-hit" style="cursor:pointer">
-        <!-- invisible expanded hitbox -->
+      <g id="anvil-hit" style="cursor:pointer;touch-action:manipulation">
         <rect x="60" y="40" width="120" height="140" fill="transparent"/>
-        <!-- Hammer group (swings on click) -->
         <g id="hammer-group" transform="rotate(-20, 195, 70)">
           <rect x="178" y="54" width="6" height="38" rx="2" fill="#8a7a6a"/>
           <rect x="169" y="48" width="22" height="12" rx="3" fill="#c8a060"/>
           <rect x="171" y="51" width="10" height="6" rx="1" fill="#e0b870" opacity="0.7"/>
         </g>
-        <!-- Anvil body -->
         <g id="anvil-body">
-          <!-- Pedestal -->
           <rect x="103" y="150" width="34" height="16" rx="3" fill="#3a3028"/>
           <rect x="99" y="148" width="42" height="6" rx="2" fill="#4a3d30"/>
-          <!-- Main body trapezoid -->
           <polygon points="85,148 155,148 162,105 78,105" fill="#4a3d30"/>
-          <!-- Top face -->
           <rect x="76" y="92" width="88" height="16" rx="4" fill="#5a4a38"/>
-          <!-- Horn (right side) -->
           <polygon points="162,100 188,108 162,114" fill="#4a3d30"/>
           <polygon points="162,100 188,108 162,103" fill="#5a4a38" opacity="0.6"/>
-          <!-- Highlights -->
           <rect x="78" y="93" width="84" height="4" rx="2" fill="#7a6a54" opacity="0.6"/>
           <polygon points="87,148 153,148 160,108 80,108" fill="#3d3028" opacity="0.4"/>
         </g>
-        <!-- Ember on anvil top -->
         <g id="ember-group" filter="url(#ember-filter)">
           <circle id="ember-outer" cx="120" cy="88" r="14" fill="url(#ember-glow)" opacity="0.7"/>
           <circle id="ember-core" cx="120" cy="88" r="6" fill="#ffcc60" opacity="0.9"/>
@@ -94,17 +88,21 @@
     <div class="h-line">Affinity <span class="h-aff" id="affinity-disp">×1.00</span></div>
   </div>
 
-  <div id="header-strip">① Tap anvil → ② Forge stars → ③ Spend Light in Skill Tree</div>
+  <div id="header-strip">① Tap anvil → ② Forge stars → ③ Open Skill Tree to spend Light</div>
 
-  <button id="skills-btn" aria-label="Open skills">✦ Skills</button>
+  <button id="skills-btn" aria-label="Open skill tree">✦ Skills</button>
   <button id="settings-btn" aria-label="Settings">⚙</button>
 
-  <div id="skills-drawer">
-    <div id="drawer-head">
-      <span id="drawer-title">Skill Tree</span>
-      <button id="drawer-close" aria-label="Close">✕</button>
+  <!-- ===== SKILL MODAL (replaces drawer) ===== -->
+  <div id="skill-modal" role="dialog" aria-modal="true" aria-label="Skill Tree">
+    <div id="skill-modal-box">
+      <div id="skill-modal-head">
+        <span id="skill-modal-title">Skill Tree</span>
+        <span id="modal-light-count">0 Light</span>
+        <button id="modal-close-btn" aria-label="Close skill tree" style="touch-action:manipulation">✕</button>
+      </div>
+      <div id="skill-tree-container"></div>
     </div>
-    <div id="drawer-body"></div>
   </div>
 
   <div id="settings-menu">

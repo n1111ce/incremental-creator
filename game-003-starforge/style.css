@@ -1,4 +1,4 @@
-/* style.css — Starforge */
+/* style.css — Starforge v2 */
 
 :root {
   --sky-hue: 250;
@@ -34,7 +34,7 @@ html, body {
   touch-action: none;
 }
 
-/* ---------- Forge area (middle 35%+) ---------- */
+/* ---------- Forge area ---------- */
 #forge-area {
   flex: 1;
   display: flex;
@@ -50,6 +50,59 @@ html, body {
   height: auto;
   display: block;
   touch-action: none;
+}
+
+/* Twin anvil layout */
+.twin-anvil-wrap {
+  display: flex;
+  flex-direction: row;
+  gap: clamp(10px, 3vw, 32px);
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.forge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.forge-container #forge-svg,
+.forge-svg-2 {
+  width: clamp(130px, 20vw, 230px);
+  height: auto;
+  display: block;
+  touch-action: none;
+}
+.heat-bar-wrap-inline {
+  position: relative;
+  width: clamp(110px, 18vw, 200px);
+  height: 14px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.heat-bar-fill-2 {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #c04000, #ffb830, #fff8c0);
+  border-radius: 8px;
+  transition: width 0.1s linear;
+}
+.heat-label-2 {
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .twin-anvil-wrap { flex-direction: column; gap: 8px; }
 }
 
 #anvil-hit {
@@ -177,81 +230,154 @@ html, body {
 #settings-menu button:hover { background: rgba(255,255,255,0.1); }
 #settings-close { color: #666688; }
 
-/* ---------- Skill drawer ---------- */
-#skills-drawer {
-  position: fixed; top: 0; right: -45%;
-  width: clamp(280px, 42%, 420px);
-  height: 100vh; z-index: 300;
+/* ---------- SKILL MODAL ---------- */
+#skill-modal {
+  position: fixed; inset: 0;
+  z-index: 400;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+  /* scale+fade in */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+#skill-modal.open {
+  display: flex;
+  opacity: 1;
+  pointer-events: all;
+  animation: modal-in 180ms ease forwards;
+}
+
+#skill-modal-box {
   background: #08081a;
-  border-left: 1px solid rgba(255,255,255,0.08);
-  display: flex; flex-direction: column;
-  transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  width: min(92vw, 620px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-}
-#skills-drawer.open { right: 0; }
-
-@media (max-width: 700px) {
-  #skills-drawer { width: 100%; right: -100%; }
-  #skills-drawer.open { right: 0; }
+  box-shadow: 0 8px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(80,80,200,0.15);
 }
 
-#drawer-head {
-  padding: 16px 14px 10px;
-  display: flex; align-items: center; justify-content: space-between;
+@media (max-width: 500px) {
+  #skill-modal-box {
+    width: 100vw;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+}
+
+#skill-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 10px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
 }
-#drawer-title { font-size: 15px; color: #a0a0d8; letter-spacing: 1px; }
-#drawer-close {
+#skill-modal-title {
+  font-size: 15px;
+  color: #a0a0d8;
+  letter-spacing: 1px;
+  font-weight: 600;
+  flex: 1;
+}
+#modal-light-count {
+  font-size: 12px;
+  color: #ffcc60;
+  font-weight: 600;
+  margin-right: 6px;
+}
+#modal-close-btn {
   background: none; border: none; color: #555577;
   font-size: 20px; cursor: pointer; line-height: 1; padding: 4px 6px;
   touch-action: manipulation;
-}
-#drawer-close:hover { color: #a0a0d8; }
-
-#drawer-body {
-  flex: 1; overflow-y: auto;
-  padding: 10px 10px 80px;
-}
-#drawer-body::-webkit-scrollbar { width: 4px; }
-#drawer-body::-webkit-scrollbar-thumb { background: #222244; border-radius: 2px; }
-
-.branch-section { margin-bottom: 14px; }
-.branch-header {
-  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
-  color: #5555aa; padding: 6px 4px 4px; font-weight: 600;
-}
-
-.skill-node {
-  margin: 4px 0; padding: 9px 12px;
+  min-width: 44px; min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
   border-radius: 8px;
-  border: 1.5px solid #1e1e3a;
-  background: #10102a;
-  cursor: default;
-  transition: box-shadow 0.3s, background 0.2s;
+  transition: color 0.2s, background 0.2s;
 }
-.skill-node.locked { border-color: #181830; }
-.skill-node.locked .sn-name { color: #333355; }
-.skill-node.locked .sn-lore { color: #222240; }
-.skill-node.locked .sn-effect { color: #282848; }
-.skill-node.locked .sn-cost { color: #282848; }
-.skill-node.available {
-  border-color: #5555cc; cursor: pointer;
-  animation: avail-pulse 2s ease-in-out infinite;
+#modal-close-btn:hover { color: #a0a0d8; background: rgba(255,255,255,0.06); }
+
+#skill-tree-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 8px 20px;
 }
-.skill-node.available:hover { background: #14143a; }
-.skill-node.owned { background: #14143a; border-color: #3333aa; border-left: 3px solid #7070ee; }
-.skill-node.owned .sn-name { color: #a0a0ff; }
-.skill-node.owned .sn-cost { display: none; }
-.skill-node.owned .sn-req  { display: none; }
+#skill-tree-container::-webkit-scrollbar { width: 4px; }
+#skill-tree-container::-webkit-scrollbar-thumb { background: #222244; border-radius: 2px; }
 
-.sn-name   { font-size: 13px; font-weight: 600; margin-bottom: 2px; color: #c0c0e8; }
-.sn-lore   { font-size: 10px; font-style: italic; color: #444466; margin-bottom: 4px; line-height: 1.4; }
-.sn-effect { font-size: 10px; color: #7070aa; margin-top: 2px; }
-.sn-cost   { font-size: 11px; color: #ffcc60; margin-top: 4px; }
-.sn-req    { font-size: 10px; color: #885500; margin-top: 2px; }
+#skill-tree-svg {
+  touch-action: manipulation;
+}
 
-.skill-node.flash-node { animation: node-flash 0.4s ease-out; }
+/* Mechanic node glow pulse */
+@keyframes mech-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.9; }
+}
+
+/* Tree node flash feedback */
+.flash-node { animation: node-flash 0.4s ease-out; }
+
+/* ---------- Node tooltip card ---------- */
+.node-tooltip {
+  position: absolute;
+  z-index: 500;
+  background: #0c0c22;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  width: 180px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.7);
+  pointer-events: all;
+}
+.tip-name   { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+.tip-flavor { font-size: 10px; font-style: italic; color: #555577; margin-bottom: 6px; line-height: 1.4; }
+.tip-effect { font-size: 11px; color: #9090cc; margin-bottom: 6px; line-height: 1.4; }
+.tip-cost   { font-size: 12px; color: #ffcc60; font-weight: 600; margin-bottom: 8px; }
+.tip-req    { font-size: 10px; color: #885500; margin-bottom: 4px; }
+.tip-owned  { font-size: 11px; color: #6060ee; }
+.tip-forge-btn {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  background: rgba(80,60,200,0.3);
+  border: 1px solid #5544cc;
+  border-radius: 7px;
+  color: #c0b0ff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.2s;
+  text-align: center;
+  min-height: 44px;
+}
+.tip-forge-btn:hover { background: rgba(80,60,200,0.5); }
+
+/* ---------- Combo counter ---------- */
+#combo-counter {
+  position: fixed;
+  pointer-events: none;
+  z-index: 500;
+  transition: opacity 0.3s;
+  font-family: system-ui, sans-serif;
+  letter-spacing: 1px;
+}
+@keyframes combo-pop {
+  0%   { transform: scale(0.7) translateY(0); }
+  50%  { transform: scale(1.2) translateY(-8px); }
+  100% { transform: scale(1) translateY(-4px); }
+}
+
+/* ---------- Moon group ---------- */
+.moon-group { pointer-events: none; }
 
 /* ---------- Supernova button ---------- */
 #supernova-btn-wrap {
@@ -308,7 +434,6 @@ html, body {
   gap: 0;
   pointer-events: all;
 }
-
 #intro-lines {
   display: flex; flex-direction: column; align-items: center; gap: 18px;
   margin-bottom: 40px;
@@ -334,11 +459,9 @@ html, body {
   border: 2px solid #ffb830;
   animation: intro-ring 1s ease-in-out infinite alternate;
 }
-#intro-hint-text {
-  font-size: 13px; color: #ffb83088; letter-spacing: 0.5px;
-}
+#intro-hint-text { font-size: 13px; color: #ffb83088; letter-spacing: 0.5px; }
 
-/* ---------- Modals ---------- */
+/* ---------- Modals (import / confirm) ---------- */
 #import-modal, #confirm-modal {
   position: fixed; inset: 0; z-index: 700;
   background: rgba(0,0,0,0.8);
@@ -369,6 +492,7 @@ html, body {
   font-size: 13px; padding: 8px 18px;
   cursor: pointer; touch-action: manipulation;
   transition: background 0.2s;
+  min-height: 44px;
 }
 #import-btns button:hover, #confirm-btns button:hover { background: rgba(255,255,255,0.14); }
 #import-confirm, #confirm-yes {
@@ -384,8 +508,8 @@ html, body {
   50%       { opacity: 0.7; }
 }
 @keyframes avail-pulse {
-  0%, 100% { box-shadow: 0 0 5px #3333aa; }
-  50%       { box-shadow: 0 0 16px #5555cc, 0 0 28px #3333aa44; }
+  0%, 100% { opacity: 0.85; }
+  50%       { opacity: 1; filter: drop-shadow(0 0 6px #5555cc); }
 }
 @keyframes node-flash {
   0%   { filter: brightness(1); }
@@ -403,4 +527,8 @@ html, body {
 @keyframes intro-ring {
   0%   { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 8px #ffb83088; }
   100% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 22px #ffb830cc; }
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
 }
