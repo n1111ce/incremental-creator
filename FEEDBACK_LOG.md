@@ -16,6 +16,29 @@ Entry format:
 
 ---
 
+## game-004-tide-shrine — 2026-04-24
+**Liked:**
+- Colors across the whole scene — managed to make a non-boring look despite being procedural
+- Day/night cycle (sky drift + moon phases)
+- Fish (pearl diver) scrolling across, crescent moon, watchtower (lighthouse) — they *add to the look* and make the world feel alive
+**Disliked:**
+- No prestige menu — the loop has no "reset + come back stronger" layer
+- Skills don't add enough new functionality — numeric stepping-stones feel hollow without the mechanic-unlock payoff being dramatic. Mechanic nodes need to be GAME-BREAKING, not subtle.
+- The mods/upgrades need to all *converge on the game's purpose* at the end — i.e. the player should feel like the grinding was building toward something, not scattered perks.
+- **Only one thing to click — the rope.** No other interactables on screen. Even with auto-puller + diver + second shrine, it still felt like doom-clicking one target. Player wants multiple things to click, varied actions, new objects unlocked by the tree that become clickable targets themselves.
+**Raw quotes:**
+- "nice colors everywhere, you managed to make a non boring game look"
+- "liked changing day night cycle, fish scrolling around moon crescent and the watch tower, adds to the game look"
+- "no prestige menu"
+- "skills doesnt add more functionalities"
+- "some skills need to have game breaking functionalities and added mods or objects and things to the game for further dopamine rush"
+- "but all those mods need to be finally add to the game purpose in the end!"
+- "im only clicking on one thing, the rope! no automations no other things to click on, or find skills for. im just doom clicking on one thing!"
+- "find me other things to click and ideas to expand on the core game"
+**Distilled into LESSONS.md?** yes
+
+---
+
 ## game-003-starforge — 2026-04-24
 **Liked:**
 - Game concept — creative, cool theme

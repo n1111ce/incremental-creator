@@ -23,6 +23,23 @@ Format: one-line rule, then optional **Why:** if non-obvious. Merge duplicates. 
 - **Numeric upgrades must lead to mechanic unlocks.** Every branch needs 2–3 "boring" numeric nodes (+click, faster auto, bigger multiplier) that *gate* a node which unlocks a brand-new game mechanic (combo system, falling-stars minigame, second interactable, moon phase buff, passive generator, etc.). The payoff after the grind is what makes grinding feel good.
 - **Many mechanics, not just many numbers.** Aim for 4–6 mechanic-unlock nodes per game. The "whoa, a whole new thing just appeared" moment is the strongest dopamine lever — stack several of them.
 - **Show the tree's full shape from day one** — locked mechanic-unlock nodes should look special (glowing frame, distinct icon) even when unaffordable, so the player sees the game-breakers on the horizon and plans toward them.
+- **Mechanic unlocks must be GAME-BREAKING, not subtle.** A moon phase that gives "3× for 10s" or a second rope that auto-pulls feels the same as a bigger numeric upgrade to the player. The unlock must *visibly transform the scene* and *change how the player interacts* — a new minigame, a new mode, a screen-wide event, a permanent new interactable the player now hunts. If the player can't describe the mechanic to a friend in one sentence that starts with "and then you get to…", it's not game-breaking enough.
+- **All branches must converge on a final game purpose.** Scattered perks feel like filler. The end of the tree (or the prestige layer) should resolve the story — the shrine is restored, the star ignites, the forge is lit. The player needs to grind *toward something*, not just *for more numbers*.
+
+## Prestige & end-state
+
+- **Every game needs a prestige/reset loop visible from the start.** Not implementing it is a dealbroken: without a prestige layer, the late game has no horizon — once the tree is done, the player has nothing left. Even a stub ("your shrine will one day be complete — 0/100 completion") gives the grind a destination.
+- Prestige currency earned in one run should unlock *new* mechanics/nodes on re-entry, not just flat multipliers. Flat multiplier prestige is the cheapest form — it re-grinds the same tree faster. The player wants a *second tree* or *new generator archetype* that only prestige currency can touch.
+
+## Clickables & interaction variety
+
+This is the biggest lesson from game-004: even with auto-puller + a random-spawn creature + a second shrine + a combo lighthouse, the game still felt like "doom-clicking one thing." The rope was the only meaningful active target, and every other "mechanic" was either passive or a rare spawn.
+
+- **A good incremental has multiple clickables on screen simultaneously**, not one hero tap-target. The player's eye should flit between 3–6 active things at any given moment in mid-game.
+- **Every mechanic unlock should add a new *clickable* to the world**, not just a background multiplier. Moon phases, combo bars, and auto-pullers are passive effects — they don't give the player anything new to *do*. A good mechanic unlock introduces a new object on the canvas the player actively interacts with: a brazier they tap to ignite, a constellation they drag-connect, a fish they catch, a gear they spin.
+- **Vary the interaction type per clickable**, don't just add more tap targets. Tap, hold, drag, swipe, stack, match, time-based tap — each new mechanic should introduce a fresh *verb*, not just a fresh noun to tap.
+- **Idle/passive income is fine as a floor, not a ceiling.** Auto-pullers and ambient gain free the player to focus attention elsewhere — but only if there *is* something else on screen to focus on. Adding auto-income without adding new clickables creates the "watch numbers tick up" antipattern.
+- **Rare-spawn creatures (like the pearl diver) are not enough interaction.** A 30–60s random spawn clicked once is a flavor dash, not a mechanic. It needs to be one of many things happening, not the only secondary target.
 
 ## UI & feel
 
@@ -57,7 +74,10 @@ This family of bugs has now burned iterations across TWO games (trunks in game-0
 
 - Purposeless clicking — if the player can't articulate *why* they're clicking, the loop feels hollow. Always answer "what am I working toward?" at every stage.
 - Permanent split-screen layouts where the upgrade panel eats half the view — kills immersion and makes the world feel small.
+- **"Doom-clicking one thing."** A single hero clickable + passive background systems = the player feels trapped on one button. Ship a game with 3+ concurrent clickables by mid-game, or the core loop reads as a cookie clicker clone.
+- **Mechanic unlocks that are really just multipliers in disguise.** "Full moon = 3× for 10s", "combo beam = 3× for 8s" — from the player's seat, these are numeric buffs, not new mechanics. If it doesn't change what the player does with their hands, it's a number.
+- **Shipping without a prestige horizon.** Mid-game plays fine, then the tree fills up and the game is over. Prestige is not optional — it's the only thing that makes the final third worth playing.
 
 ---
 
-*Updated after game-003-starforge playtest (2026-04-24).*
+*Updated after game-004-tide-shrine playtest (2026-04-24).*
